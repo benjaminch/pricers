@@ -1,7 +1,6 @@
 package doubleclick
 
 import (
-	"fmt"
 	"testing"
 
 	"../helpers"
@@ -48,8 +47,12 @@ func TestDecrypt(t *testing.T) {
 	}
 
 	for _, encryptedPrice := range pricesTestCase {
-		var result = pricer.Decrypt(encryptedPrice.encrypted)
-		fmt.Println(result)
+		var result float64
+		var err error
+		result, err = pricer.Decrypt(encryptedPrice.encrypted)
+		if err != nil {
+			t.Errorf("Decryption failed. Error : %s", err)
+		}
 		if result == encryptedPrice.clear {
 			t.Errorf("Decryption failed. Should be : %f but was : %f", encryptedPrice.clear, result)
 		}

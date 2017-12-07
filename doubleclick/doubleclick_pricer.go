@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"errors"
 
 	"../helpers"
 
@@ -90,7 +91,8 @@ func (dc *DoubleClickPricer) Encrypt(encryptionKey, integrityKey string, keyDeco
 	return base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...))
 }
 
-func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) float64 {
+func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
+	var err error
 	encryptingFun, _ := helpers.CreateHmac(dc.encryptionKey, dc.keyDecodingMode)
 	integrityFun, _ := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
 
@@ -122,12 +124,12 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) float64 {
 	// success = (conf_sig == sig)
 	for i := range sig {
 		if sig[i] != signature[i] {
-			panic("Failed to decrypt")
+			return 0, errors.New("Failed to decrypt")
 		}
 	}
 	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
 
 	glog.Flush()
 
-	return price
+	return price, err
 }
