@@ -28,8 +28,8 @@ func TestDecrypt(t *testing.T) {
 	var pricer *DoubleClickPricer
 	var err error
 	pricer, err = BuildNewDoubleClickPricer(
-		"skU7Ax_NL5pPAFyKdkfZjZz2-VhIN8bjj1rVFOaJ_5o=",
-		"arO23ykdNqUQ5LEoQ0FVmPkBd7xB5CO89PDZlSjpFxo=",
+		"090a654e859cd11d673ad1f21f3ae57447fb8037f3cb1adb05b0897b3c496992",
+		"Ekey：c47858f4f24e8111272f2042b467477b9b0040da232336792e57aa267b500114",
 		helpers.Utf8,
 		1000000,
 		false,
@@ -41,9 +41,9 @@ func TestDecrypt(t *testing.T) {
 
 	// Encrypted prices we will try to decrypt
 	var pricesTestCase = []*PriceTestCase{
-		NewPriceTestCase("WEp8wQAAAABnFd5EkB2k1wJeFcAj-Z_JVOeGzA==", 100.0),
-		NewPriceTestCase("WEp8sQAAAACwF6CtLJrXSRFBM8UiTTIyngN-og==", 1900.0),
-		NewPriceTestCase("WEp8nQAAAAADG-y45xxIC1tMWuTjzmDW6HtroQ==", 2700.0),
+		NewPriceTestCase("9Xw3oTa2pnw3mEvdA60wnPqaBaPmm8KaJAsZIg", 100.386),
+		NewPriceTestCase("9nw3oTa2pnw3mEvdA60wnGYgYK_ghaiOJsuaBQ", 0.003),
+		NewPriceTestCase("93w3oTa2pnw3mEvdA60wnKJPC6nNSQFkeNyrOQ", 0.401),
 	}
 
 	for _, encryptedPrice := range pricesTestCase {
