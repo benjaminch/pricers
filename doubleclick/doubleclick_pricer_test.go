@@ -29,7 +29,7 @@ func TestDecrypt(t *testing.T) {
 	var err error
 	pricer, err = BuildNewDoubleClickPricer(
 		"090a654e859cd11d673ad1f21f3ae57447fb8037f3cb1adb05b0897b3c496992",
-		"Ekey：c47858f4f24e8111272f2042b467477b9b0040da232336792e57aa267b500114",
+		"c47858f4f24e8111272f2042b467477b9b0040da232336792e57aa267b500114",
 		helpers.Utf8,
 		1000000,
 		false,
