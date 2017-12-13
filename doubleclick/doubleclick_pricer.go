@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"errors"
+	"fmt"
 
 	"../helpers"
 
@@ -97,7 +97,11 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	integrityFun, _ := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
 
 	// Decode base64
-	decoded, _ := base64.URLEncoding.DecodeString(encryptedPrice)
+	encryptedPrice = helpers.AddBase64Padding(encryptedPrice)
+	decoded, err := base64.StdEncoding.DecodeString(encryptedPrice)
+	if err != nil {
+		return 0, err
+	}
 
 	// Get elements
 	var (
