@@ -3,8 +3,8 @@ package doubleclick
 import (
 	"testing"
 
-	"../helpers"
-	testshelpers "../tests_helpers"
+	"github.com/benjaminch/openrtb-pricers/helpers"
+	testshelpers "github.com/benjaminch/openrtb-pricers/tests_helpers"
 )
 
 func BuildNewDoubleClickPricer(encryptionKey string, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {

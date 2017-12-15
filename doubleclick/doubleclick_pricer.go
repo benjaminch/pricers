@@ -8,7 +8,7 @@ import (
 	"errors"
 	"fmt"
 
-	"../helpers"
+	"github.com/benjaminch/openrtb-pricers/helpers"
 
 	"github.com/golang/glog"
 )
