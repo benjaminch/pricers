@@ -4,9 +4,10 @@ import (
 	"testing"
 
 	"../helpers"
+	testshelpers "../tests_helpers"
 )
 
-func BuildNewDoubleClickPricer(encryptionKey, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
+func BuildNewDoubleClickPricer(encryptionKey string, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
 	return NewDoubleClickPricer(encryptionKey, integrityKey, keyDecodingMode, scaleFactor, isDebugMode)
 }
 
@@ -15,11 +16,11 @@ type PriceTestCase struct {
 	clear     float64
 }
 
-func NewPriceTestCase(encrypted string, clear float64) *PriceTestCase {
-	return &PriceTestCase{encrypted: encrypted, clear: clear}
+func NewPriceTestCase(encrypted string, clear float64) PriceTestCase {
+	return PriceTestCase{encrypted: encrypted, clear: clear}
 }
 
-func TestDecrypt(t *testing.T) {
+func TestDecryptSenario1(t *testing.T) {
 
 	// Create a pricer with:
 	// - HEX keys
@@ -28,9 +29,9 @@ func TestDecrypt(t *testing.T) {
 	var pricer *DoubleClickPricer
 	var err error
 	pricer, err = BuildNewDoubleClickPricer(
-		"090a654e859cd11d673ad1f21f3ae57447fb8037f3cb1adb05b0897b3c496992",
-		"c47858f4f24e8111272f2042b467477b9b0040da232336792e57aa267b500114",
-		helpers.Utf8,
+		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
+		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
+		helpers.Hexa,
 		1000000,
 		false,
 	)
@@ -40,20 +41,23 @@ func TestDecrypt(t *testing.T) {
 	}
 
 	// Encrypted prices we will try to decrypt
-	var pricesTestCase = []*PriceTestCase{
-		NewPriceTestCase("9Xw3oTa2pnw3mEvdA60wnPqaBaPmm8KaJAsZIg", 100.386),
-		NewPriceTestCase("9nw3oTa2pnw3mEvdA60wnGYgYK_ghaiOJsuaBQ", 0.003),
-		NewPriceTestCase("93w3oTa2pnw3mEvdA60wnKJPC6nNSQFkeNyrOQ", 0.401),
+	var pricesTestCase = []PriceTestCase{
+		NewPriceTestCase("anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg", 1.354),
+		NewPriceTestCase("ce131TRp7waIZI2qOiRr2DMm2sSIeGh_wIAwVQ", 3.24),
+		NewPriceTestCase("K6tfPnPvN_5E2xS3GssrFYeouJJRkBQqxR_FxQ", 1),
+		NewPriceTestCase("lEzCWnwgB21Dy2_H43PKZeZaNDstZZElZRFTDQ", 0.89),
+		NewPriceTestCase("L91lB6giyIXh2o4CeUf0F7sCXozKWRXAUeMUfg", 100),
+		NewPriceTestCase("8WY0BgWbds1eEVNFkrXVIr1GU08iueKrP0wXfw", 0.01),
 	}
 
 	for _, encryptedPrice := range pricesTestCase {
 		var result float64
 		var err error
-		result, err = pricer.Decrypt(encryptedPrice.encrypted)
+		result, err = pricer.Decrypt(encryptedPrice.encrypted, false)
 		if err != nil {
 			t.Errorf("Decryption failed. Error : %s", err)
 		}
-		if result == encryptedPrice.clear {
+		if !testshelpers.FloatEquals(result, encryptedPrice.clear) {
 			t.Errorf("Decryption failed. Should be : %f but was : %f", encryptedPrice.clear, result)
 		}
 	}

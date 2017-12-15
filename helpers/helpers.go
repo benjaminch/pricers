@@ -23,6 +23,8 @@ func CreateHmac(key string, mode KeyDecodingMode) (hash.Hash, error) {
 	var err error
 	var k []byte
 
+	// TODO: allow to accept base64 keys
+
 	if mode == Utf8 {
 		k = []byte(key)
 	} else {

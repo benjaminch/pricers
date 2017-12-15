@@ -23,9 +23,9 @@ type DoubleClickPricer struct {
 	isDebugMode     bool
 }
 
-func NewDoubleClickPricer(encryptionKey, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
+func NewDoubleClickPricer(encryptionKey string, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
 	var err error
-	return &DoubleClickPricer{encryptionKey: encryptionKey, keyDecodingMode: keyDecodingMode, scaleFactor: scaleFactor, isDebugMode: isDebugMode}, err
+	return &DoubleClickPricer{encryptionKey: encryptionKey, integrityKey: integrityKey, keyDecodingMode: keyDecodingMode, scaleFactor: scaleFactor, isDebugMode: isDebugMode}, err
 }
 
 // Encrypt is returned by FormFile when the provided file field name
@@ -91,16 +91,35 @@ func (dc *DoubleClickPricer) Encrypt(encryptionKey, integrityKey string, keyDeco
 	return base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...))
 }
 
-func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
+func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
 	var err error
-	encryptingFun, _ := helpers.CreateHmac(dc.encryptionKey, dc.keyDecodingMode)
-	integrityFun, _ := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
+	var errPrice float64
+
+	encryptingFun, err := helpers.CreateHmac(dc.encryptionKey, dc.keyDecodingMode)
+	if err != nil {
+		return errPrice, nil
+	}
+
+	integrityFun, err := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
+	if err != nil {
+		return errPrice, nil
+	}
+
+	if isDebugMode == true {
+		fmt.Println("Encryption key : ", dc.encryptionKey)
+		fmt.Println("Integrity key : ", dc.integrityKey)
+	}
 
 	// Decode base64
 	encryptedPrice = helpers.AddBase64Padding(encryptedPrice)
-	decoded, err := base64.StdEncoding.DecodeString(encryptedPrice)
+	decoded, err := base64.URLEncoding.DecodeString(encryptedPrice)
 	if err != nil {
-		return 0, err
+		return errPrice, err
+	}
+
+	if isDebugMode == true {
+		fmt.Println("Encrypted price : ", encryptedPrice)
+		fmt.Println("Base64 decoded price : ", decoded)
 	}
 
 	// Get elements
@@ -117,6 +136,13 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	// pad = hmac(e_key, iv)
 	pad := helpers.HmacSum(encryptingFun, iv[:])[:8]
 
+	if isDebugMode == true {
+		fmt.Println("IV : ", hex.EncodeToString(iv[:]))
+		fmt.Println("Encoded price : ", hex.EncodeToString(p[:]))
+		fmt.Println("Signature : ", hex.EncodeToString(signature[:]))
+		fmt.Println("Pad : ", hex.EncodeToString(pad[:]))
+	}
+
 	// priceMicro = p <xor> pad
 	for i := range p {
 		priceMicro[i] = pad[i] ^ p[i]
@@ -128,7 +154,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	// success = (conf_sig == sig)
 	for i := range sig {
 		if sig[i] != signature[i] {
-			return 0, errors.New("Failed to decrypt")
+			return errPrice, errors.New("Failed to decrypt")
 		}
 	}
 	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
