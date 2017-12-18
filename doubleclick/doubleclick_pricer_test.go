@@ -86,3 +86,11 @@ func TestEncryptWithScaleFactor(t *testing.T) {
 func TestEncryptWithDebug(t *testing.T) {
 	// TODO : To be implemented
 }
+
+func TestEncryptDecryptWithHexaKeys(t *testing.T) {
+	// TODO : To be implemented
+}
+
+func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
+	// TODO : To be implemented
+}
