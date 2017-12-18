@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
-	"fmt"
 
 	"github.com/benjaminch/openrtb-pricers/helpers"
 
@@ -23,14 +22,31 @@ type DoubleClickPricer struct {
 	isDebugMode     bool
 }
 
-func NewDoubleClickPricer(encryptionKey string, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
+func NewDoubleClickPricer(encryptionKey string,
+	integrityKey string,
+	keyDecodingMode helpers.KeyDecodingMode,
+	scaleFactor float64,
+	isDebugMode bool) (*DoubleClickPricer, error) {
 	var err error
-	return &DoubleClickPricer{encryptionKey: encryptionKey, integrityKey: integrityKey, keyDecodingMode: keyDecodingMode, scaleFactor: scaleFactor, isDebugMode: isDebugMode}, err
+	return &DoubleClickPricer{
+			encryptionKey:   encryptionKey,
+			integrityKey:    integrityKey,
+			keyDecodingMode: keyDecodingMode,
+			scaleFactor:     scaleFactor,
+			isDebugMode:     isDebugMode},
+		err
 }
 
 // Encrypt is returned by FormFile when the provided file field name
 // is either not present in the request or not a file field.
-func (dc *DoubleClickPricer) Encrypt(encryptionKey, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, seed string, price float64, scaleFactor float64, isDebugMode bool) string {
+func (dc *DoubleClickPricer) Encrypt(
+	encryptionKey string,
+	integrityKey string,
+	keyDecodingMode helpers.KeyDecodingMode,
+	seed string,
+	price float64,
+	scaleFactor float64,
+	isDebugMode bool) string {
 	encryptingFun, _ := helpers.CreateHmac(dc.encryptionKey, dc.keyDecodingMode)
 	integrityFun, _ := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
 
@@ -42,13 +58,13 @@ func (dc *DoubleClickPricer) Encrypt(encryptionKey, integrityKey string, keyDeco
 	)
 
 	if isDebugMode == true {
-		fmt.Println("Keys decoding mode : ", keyDecodingMode)
-		fmt.Println("Encryption key : ", encryptionKey)
+		glog.Info("Keys decoding mode : ", keyDecodingMode)
+		glog.Info("Encryption key : ", encryptionKey)
 		encryptionKeyHexa, _ := hex.DecodeString(encryptionKey)
-		fmt.Println("Encryption key (bytes) : ", []byte(encryptionKeyHexa))
-		fmt.Println("Integrity key : ", integrityKey)
+		glog.Info("Encryption key (bytes) : ", []byte(encryptionKeyHexa))
+		glog.Info("Integrity key : ", integrityKey)
 		integrityKeyHexa, _ := hex.DecodeString(integrityKey)
-		fmt.Println("Integrity key (bytes) : ", []byte(integrityKeyHexa))
+		glog.Info("Integrity key (bytes) : ", []byte(integrityKeyHexa))
 	}
 
 	data := helpers.ApplyScaleFactor(price, scaleFactor, isDebugMode)
@@ -57,15 +73,15 @@ func (dc *DoubleClickPricer) Encrypt(encryptionKey, integrityKey string, keyDeco
 	sum := md5.Sum([]byte(seed))
 	copy(iv[:], sum[:])
 	if isDebugMode == true {
-		fmt.Println("Seed : ", seed)
-		fmt.Println("Initialization vector : ", iv)
+		glog.Info("Seed : ", seed)
+		glog.Info("Initialization vector : ", iv)
 	}
 
 	//pad = hmac(e_key, iv), first 8 bytes
 	pad := helpers.HmacSum(encryptingFun, iv[:])[:8]
 	if isDebugMode == true {
-		fmt.Println("// pad = hmac(e_key, iv), first 8 bytes")
-		fmt.Println("Pad : ", pad)
+		glog.Info("// pad = hmac(e_key, iv), first 8 bytes")
+		glog.Info("Pad : ", pad)
 	}
 
 	// enc_data = pad <xor> data
@@ -73,16 +89,16 @@ func (dc *DoubleClickPricer) Encrypt(encryptionKey, integrityKey string, keyDeco
 		encoded[i] = pad[i] ^ data[i]
 	}
 	if isDebugMode == true {
-		fmt.Println("// enc_data = pad <xor> data")
-		fmt.Println("Encoded price bytes : ", encoded)
+		glog.Info("// enc_data = pad <xor> data")
+		glog.Info("Encoded price bytes : ", encoded)
 	}
 
 	// signature = hmac(i_key, data || iv), first 4 bytes
 	sig := helpers.HmacSum(integrityFun, append(data[:], iv[:]...))[:4]
 	copy(signature[:], sig[:])
 	if isDebugMode == true {
-		fmt.Println("// signature = hmac(i_key, data || iv), first 4 bytes")
-		fmt.Println("Signature : ", sig)
+		glog.Info("// signature = hmac(i_key, data || iv), first 4 bytes")
+		glog.Info("Signature : ", sig)
 	}
 
 	glog.Flush()
@@ -106,8 +122,8 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (f
 	}
 
 	if isDebugMode == true {
-		fmt.Println("Encryption key : ", dc.encryptionKey)
-		fmt.Println("Integrity key : ", dc.integrityKey)
+		glog.Info("Encryption key : ", dc.encryptionKey)
+		glog.Info("Integrity key : ", dc.integrityKey)
 	}
 
 	// Decode base64
@@ -118,8 +134,8 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (f
 	}
 
 	if isDebugMode == true {
-		fmt.Println("Encrypted price : ", encryptedPrice)
-		fmt.Println("Base64 decoded price : ", decoded)
+		glog.Info("Encrypted price : ", encryptedPrice)
+		glog.Info("Base64 decoded price : ", decoded)
 	}
 
 	// Get elements
@@ -137,10 +153,10 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (f
 	pad := helpers.HmacSum(encryptingFun, iv[:])[:8]
 
 	if isDebugMode == true {
-		fmt.Println("IV : ", hex.EncodeToString(iv[:]))
-		fmt.Println("Encoded price : ", hex.EncodeToString(p[:]))
-		fmt.Println("Signature : ", hex.EncodeToString(signature[:]))
-		fmt.Println("Pad : ", hex.EncodeToString(pad[:]))
+		glog.Info("IV : ", hex.EncodeToString(iv[:]))
+		glog.Info("Encoded price : ", hex.EncodeToString(p[:]))
+		glog.Info("Signature : ", hex.EncodeToString(signature[:]))
+		glog.Info("Pad : ", hex.EncodeToString(pad[:]))
 	}
 
 	// priceMicro = p <xor> pad
