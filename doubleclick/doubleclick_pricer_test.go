@@ -20,7 +20,7 @@ func NewPriceTestCase(encrypted string, clear float64) PriceTestCase {
 	return PriceTestCase{encrypted: encrypted, clear: clear}
 }
 
-func TestDecryptSenario1(t *testing.T) {
+func TestDecryptWithHexaKeys(t *testing.T) {
 
 	// Create a pricer with:
 	// - HEX keys
@@ -61,4 +61,28 @@ func TestDecryptSenario1(t *testing.T) {
 			t.Errorf("Decryption failed. Should be : %f but was : %f", encryptedPrice.clear, result)
 		}
 	}
+}
+
+func TestDecryptWithUtf8Keys(t *testing.T) {
+	// TODO : To be implemented
+}
+
+func TestDecryptWithDebug(t *testing.T) {
+	// TODO : To be implemented
+}
+
+func TestEncryptWithHexaKeys(t *testing.T) {
+	// TODO : To be implemented
+}
+
+func TestEncryptWithUtf8Keys(t *testing.T) {
+	// TODO : To be implemented
+}
+
+func TestEncryptWithScaleFactor(t *testing.T) {
+	// TODO : To be implemented
+}
+
+func TestEncryptWithDebug(t *testing.T) {
+	// TODO : To be implemented
 }
