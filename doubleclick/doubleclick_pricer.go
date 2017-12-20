@@ -40,15 +40,21 @@ func NewDoubleClickPricer(encryptionKey string,
 // Encrypt is returned by FormFile when the provided file field name
 // is either not present in the request or not a file field.
 func (dc *DoubleClickPricer) Encrypt(
-	encryptionKey string,
-	integrityKey string,
-	keyDecodingMode helpers.KeyDecodingMode,
 	seed string,
 	price float64,
-	scaleFactor float64,
-	isDebugMode bool) string {
-	encryptingFun, _ := helpers.CreateHmac(dc.encryptionKey, dc.keyDecodingMode)
-	integrityFun, _ := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
+	isDebugMode bool) (string, error) {
+	var err error
+	var encryptedPrice string
+
+	encryptingFun, err := helpers.CreateHmac(dc.encryptionKey, dc.keyDecodingMode)
+	if err != nil {
+		return encryptedPrice, err
+	}
+	
+	integrityFun, err := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
+	if err != nil {
+		return encryptedPrice, nil
+	}
 
 	// Result
 	var (
@@ -58,16 +64,22 @@ func (dc *DoubleClickPricer) Encrypt(
 	)
 
 	if isDebugMode == true {
-		glog.Info("Keys decoding mode : ", keyDecodingMode)
-		glog.Info("Encryption key : ", encryptionKey)
-		encryptionKeyHexa, _ := hex.DecodeString(encryptionKey)
+		glog.Info("Keys decoding mode : ", dc.keyDecodingMode)
+		glog.Info("Encryption key : ", dc.encryptionKey)
+		encryptionKeyHexa, err := hex.DecodeString(dc.encryptionKey)
+		if err != nil {
+			return encryptedPrice, err
+		}
 		glog.Info("Encryption key (bytes) : ", []byte(encryptionKeyHexa))
-		glog.Info("Integrity key : ", integrityKey)
-		integrityKeyHexa, _ := hex.DecodeString(integrityKey)
+		glog.Info("Integrity key : ", dc.integrityKey)
+		integrityKeyHexa, err := hex.DecodeString(dc.integrityKey)
+		if err != nil {
+			return encryptedPrice, err
+		}
 		glog.Info("Integrity key (bytes) : ", []byte(integrityKeyHexa))
 	}
 
-	data := helpers.ApplyScaleFactor(price, scaleFactor, isDebugMode)
+	data := helpers.ApplyScaleFactor(price, dc.scaleFactor, isDebugMode)
 
 	// Create Initialization Vector from seed
 	sum := md5.Sum([]byte(seed))
@@ -104,7 +116,7 @@ func (dc *DoubleClickPricer) Encrypt(
 	glog.Flush()
 
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
-	return base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...))
+	return base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), err
 }
 
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
