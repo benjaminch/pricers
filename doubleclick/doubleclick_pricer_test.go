@@ -64,7 +64,40 @@ func TestDecryptWithHexaKeys(t *testing.T) {
 }
 
 func TestDecryptWithUtf8Keys(t *testing.T) {
-	// TODO : To be implemented
+	// Create a pricer with:
+	// - UTF-8 keys
+	// - Price scale factor as micro
+	// - No debug mode
+	var pricer *DoubleClickPricer
+	var err error
+	pricer, err = BuildNewDoubleClickPricer(
+		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
+		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
+		helpers.Utf8,
+		1000000,
+		false,
+	)
+
+	if err != nil {
+		t.Error("Error creating new DoubleClickPricer")
+	}
+
+	// Encrypted prices we will try to decrypt
+	var pricesTestCase = []PriceTestCase{
+		NewPriceTestCase("u7iq5XwQTNpAyThDrV5tuJXw-Y_IXQgkMA3RFA", 1.465),
+	}
+
+	for _, encryptedPrice := range pricesTestCase {
+		var result float64
+		var err error
+		result, err = pricer.Decrypt(encryptedPrice.encrypted, false)
+		if err != nil {
+			t.Errorf("Decryption failed. Error : %s", err)
+		}
+		if !testshelpers.FloatEquals(result, encryptedPrice.clear) {
+			t.Errorf("Decryption failed. Should be : %f but was : %f", encryptedPrice.clear, result)
+		}
+	}
 }
 
 func TestDecryptWithDebug(t *testing.T) {
