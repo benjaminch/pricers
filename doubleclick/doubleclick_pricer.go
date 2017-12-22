@@ -50,10 +50,10 @@ func (dc *DoubleClickPricer) Encrypt(
 	if err != nil {
 		return encryptedPrice, err
 	}
-	
+
 	integrityFun, err := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
 	if err != nil {
-		return encryptedPrice, nil
+		return encryptedPrice, err
 	}
 
 	// Result
@@ -125,12 +125,12 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (f
 
 	encryptingFun, err := helpers.CreateHmac(dc.encryptionKey, dc.keyDecodingMode)
 	if err != nil {
-		return errPrice, nil
+		return errPrice, err
 	}
 
 	integrityFun, err := helpers.CreateHmac(dc.integrityKey, dc.keyDecodingMode)
 	if err != nil {
-		return errPrice, nil
+		return errPrice, err
 	}
 
 	if isDebugMode == true {
