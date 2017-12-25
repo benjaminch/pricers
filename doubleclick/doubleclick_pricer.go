@@ -13,9 +13,9 @@ import (
 	"github.com/golang/glog"
 )
 
-// DoubleClickPricer implementing price encryption and decryption
+// Pricer implementing price encryption and decryption
 // Specs : https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
-type DoubleClickPricer struct {
+type Pricer struct {
 	encryptionKeyRaw string
 	integrityKeyRaw  string
 	encryptionKey    hash.Hash
@@ -25,11 +25,12 @@ type DoubleClickPricer struct {
 	isDebugMode      bool
 }
 
-func NewDoubleClickPricer(encryptionKey string,
+// NewPricer returns a DoubleClickPricer struct.
+func NewPricer(encryptionKey string,
 	integrityKey string,
 	keyDecodingMode helpers.KeyDecodingMode,
 	scaleFactor float64,
-	isDebugMode bool) (*DoubleClickPricer, error) {
+	isDebugMode bool) (*Pricer, error) {
 	var err error
 	var encryptingFun, integrityFun hash.Hash
 
@@ -58,7 +59,7 @@ func NewDoubleClickPricer(encryptionKey string,
 		glog.Info("Integrity key (bytes) : ", []byte(integrityKeyHexa))
 	}
 
-	return &DoubleClickPricer{
+	return &Pricer{
 			encryptionKeyRaw: encryptionKey,
 			integrityKeyRaw:  integrityKey,
 			encryptionKey:    encryptingFun,
@@ -69,9 +70,8 @@ func NewDoubleClickPricer(encryptionKey string,
 		err
 }
 
-// Encrypt is returned by FormFile when the provided file field name
-// is either not present in the request or not a file field.
-func (dc *DoubleClickPricer) Encrypt(
+// Encrypt encrypts a clear price and a given seed.
+func (dc *Pricer) Encrypt(
 	seed string,
 	price float64,
 	isDebugMode bool) (string, error) {
@@ -124,7 +124,8 @@ func (dc *DoubleClickPricer) Encrypt(
 	return base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), err
 }
 
-func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
+// Decrypt decrypts an ecrypted price.
+func (dc *Pricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
 	var err error
 	var errPrice float64
 

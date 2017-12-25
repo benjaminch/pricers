@@ -7,8 +7,8 @@ import (
 	testshelpers "github.com/benjaminch/openrtb-pricers/tests_helpers"
 )
 
-func BuildNewDoubleClickPricer(encryptionKey string, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
-	return NewDoubleClickPricer(encryptionKey, integrityKey, keyDecodingMode, scaleFactor, isDebugMode)
+func BuildNewPricer(encryptionKey string, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*Pricer, error) {
+	return NewPricer(encryptionKey, integrityKey, keyDecodingMode, scaleFactor, isDebugMode)
 }
 
 type PriceTestCase struct {
@@ -26,9 +26,9 @@ func TestDecryptWithHexaKeys(t *testing.T) {
 	// - HEX keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *DoubleClickPricer
+	var pricer *Pricer
 	var err error
-	pricer, err = BuildNewDoubleClickPricer(
+	pricer, err = BuildNewPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
 		helpers.Hexa,
@@ -37,7 +37,7 @@ func TestDecryptWithHexaKeys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new DoubleClickPricer")
+		t.Error("Error creating new Pricer")
 	}
 
 	// Encrypted prices we will try to decrypt
@@ -68,9 +68,9 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 	// - UTF-8 keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *DoubleClickPricer
+	var pricer *Pricer
 	var err error
-	pricer, err = BuildNewDoubleClickPricer(
+	pricer, err = BuildNewPricer(
 		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
 		helpers.Utf8,
@@ -79,7 +79,7 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new DoubleClickPricer")
+		t.Error("Error creating new Pricer")
 	}
 
 	// Encrypted prices we will try to decrypt
@@ -109,9 +109,9 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 	// - HEX keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *DoubleClickPricer
+	var pricer *Pricer
 	var err error
-	pricer, err = BuildNewDoubleClickPricer(
+	pricer, err = BuildNewPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
 		helpers.Hexa,
@@ -120,7 +120,7 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new DoubleClickPricer")
+		t.Error("Error creating new Pricer")
 	}
 
 	// Clear prices we will try to encrypt
