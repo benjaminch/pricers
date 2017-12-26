@@ -159,7 +159,56 @@ func TestEncryptWithDebug(t *testing.T) {
 }
 
 func TestEncryptDecryptWithHexaKeys(t *testing.T) {
-	// TODO : To be implemented
+	// Create a pricer with:
+	// - HEX keys
+	// - Price scale factor as micro
+	// - No debug mode
+	var pricer *Pricer
+	var err error
+	pricer, err = BuildNewPricer(
+		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
+		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
+		helpers.Hexa,
+		1000000,
+		false,
+	)
+
+	if err != nil {
+		t.Error("Error creating new Pricer")
+	}
+
+	// Clear prices to encrypt
+	var pricesTestCase = []PriceTestCase{
+		NewPriceTestCase("", 1.465),
+		NewPriceTestCase("", 0),
+		NewPriceTestCase("", 100),
+		NewPriceTestCase("", 1.45676),
+		NewPriceTestCase("", 1.0),
+		NewPriceTestCase("", 1000),
+	}
+
+	for _, price := range pricesTestCase {
+		var decrypted float64
+		var encrypted string
+		var err error
+
+		// Encrypt
+		encrypted, err = pricer.Encrypt("", price.clear, false)
+		if err != nil {
+			t.Errorf("Encryption failed. Error : %s", err)
+		}
+
+		// Decrypt
+		decrypted, err = pricer.Decrypt(encrypted, false)
+		if err != nil {
+			t.Errorf("Decryption failed. Error : %s", err)
+		}
+
+		// Assert that the decrypted price is the one with encrypted in a first place
+		if !testshelpers.FloatEquals(decrypted, price.clear) {
+			t.Errorf("Decryption failed. Should be : %f but was : %f", price.clear, decrypted)
+		}
+	}
 }
 
 func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
