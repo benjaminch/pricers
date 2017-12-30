@@ -34,6 +34,8 @@ func NewPricer(encryptionKey string,
 	var err error
 	var encryptingFun, integrityFun hash.Hash
 
+	defer glog.Flush()
+
 	encryptingFun, err = helpers.CreateHmac(encryptionKey, keyDecodingMode)
 	if err != nil {
 		return nil, err
@@ -84,6 +86,8 @@ func (dc *Pricer) Encrypt(
 		signature [4]byte
 	)
 
+	defer glog.Flush()
+
 	data := helpers.ApplyScaleFactor(price, dc.scaleFactor, isDebugMode)
 
 	// Create Initialization Vector from seed
@@ -118,8 +122,6 @@ func (dc *Pricer) Encrypt(
 		glog.Info("Signature : ", sig)
 	}
 
-	glog.Flush()
-
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
 	return base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), err
 }
@@ -148,6 +150,9 @@ func (dc *Pricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, err
 		signature  [4]byte
 		priceMicro [8]byte
 	)
+
+	defer glog.Flush()
+
 	copy(iv[:], decoded[0:16])
 	copy(p[:], decoded[16:24])
 	copy(signature[:], decoded[24:28])
@@ -177,8 +182,6 @@ func (dc *Pricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, err
 		}
 	}
 	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
-
-	glog.Flush()
 
 	return price, err
 }

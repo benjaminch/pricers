@@ -37,7 +37,7 @@ func TestDecryptWithHexaKeys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new Pricer")
+		t.Error("Error creating new Pricer : ", err)
 	}
 
 	// Encrypted prices we will try to decrypt
@@ -79,7 +79,7 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new Pricer")
+		t.Error("Error creating new Pricer : ", err)
 	}
 
 	// Encrypted prices we will try to decrypt
@@ -120,7 +120,7 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new Pricer")
+		t.Error("Error creating new Pricer : ", err)
 	}
 
 	// Clear prices we will try to encrypt
@@ -174,7 +174,7 @@ func TestEncryptDecryptWithHexaKeys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new Pricer")
+		t.Error("Error creating new Pricer : ", err)
 	}
 
 	// Clear prices to encrypt
@@ -227,7 +227,7 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 	)
 
 	if err != nil {
-		t.Error("Error creating new Pricer")
+		t.Error("Error creating new Pricer : ", err)
 	}
 
 	// Clear prices to encrypt
