@@ -28,6 +28,7 @@ type Pricer struct {
 // NewPricer returns a DoubleClickPricer struct.
 func NewPricer(encryptionKey string,
 	integrityKey string,
+	isBase64Keys bool,
 	keyDecodingMode helpers.KeyDecodingMode,
 	scaleFactor float64,
 	isDebugMode bool) (*Pricer, error) {
@@ -36,11 +37,11 @@ func NewPricer(encryptionKey string,
 
 	defer glog.Flush()
 
-	encryptingFun, err = helpers.CreateHmac(encryptionKey, keyDecodingMode)
+	encryptingFun, err = helpers.CreateHmac(encryptionKey, isBase64Keys, keyDecodingMode)
 	if err != nil {
 		return nil, err
 	}
-	integrityFun, err = helpers.CreateHmac(integrityKey, keyDecodingMode)
+	integrityFun, err = helpers.CreateHmac(integrityKey, isBase64Keys, keyDecodingMode)
 	if err != nil {
 		return nil, err
 	}

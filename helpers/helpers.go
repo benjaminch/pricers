@@ -3,6 +3,7 @@ package helpers
 import (
 	"crypto/hmac"
 	"crypto/sha1"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
@@ -19,11 +20,18 @@ const (
 	Hexa                 = "hexa"
 )
 
-func CreateHmac(key string, mode KeyDecodingMode) (hash.Hash, error) {
+func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, error) {
 	var err error
+	var b64DecodedKey []byte
 	var k []byte
 
-	// TODO: allow to accept base64 keys
+	if isBase64 {
+		b64DecodedKey, err = base64.URLEncoding.DecodeString(AddBase64Padding(key))
+		if err == nil {
+			// If no error, then use the base 64 decoded key
+			key = string(b64DecodedKey[:])
+		}
+	}
 
 	if mode == Utf8 {
 		k = []byte(key)

@@ -7,8 +7,8 @@ import (
 	testshelpers "github.com/benjaminch/openrtb-pricers/tests_helpers"
 )
 
-func BuildNewPricer(encryptionKey string, integrityKey string, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*Pricer, error) {
-	return NewPricer(encryptionKey, integrityKey, keyDecodingMode, scaleFactor, isDebugMode)
+func BuildNewPricer(encryptionKey string, integrityKey string, isBase64Keys bool, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*Pricer, error) {
+	return NewPricer(encryptionKey, integrityKey, isBase64Keys, keyDecodingMode, scaleFactor, isDebugMode)
 }
 
 type PriceTestCase struct {
@@ -31,6 +31,7 @@ func TestDecryptWithHexaKeys(t *testing.T) {
 	pricer, err = BuildNewPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
+		false, // Keys are not base64
 		helpers.Hexa,
 		1000000,
 		false,
@@ -73,6 +74,7 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 	pricer, err = BuildNewPricer(
 		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
+		false, // Keys are not base64
 		helpers.Utf8,
 		1000000,
 		false,
@@ -114,6 +116,7 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 	pricer, err = BuildNewPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
+		false, // Keys are not base64
 		helpers.Hexa,
 		1000000,
 		false,
@@ -168,6 +171,7 @@ func TestEncryptDecryptWithHexaKeys(t *testing.T) {
 	pricer, err = BuildNewPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
+		false, // Keys are not base64
 		helpers.Hexa,
 		1000000,
 		false,
@@ -221,6 +225,7 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 	pricer, err = BuildNewPricer(
 		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
+		false, // Keys are not base64
 		helpers.Utf8,
 		1000000,
 		false,
