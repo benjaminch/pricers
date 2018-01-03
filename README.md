@@ -1,7 +1,13 @@
 # openrtb-pricers
 [![Build Status](https://travis-ci.org/benjaminch/openrtb-pricers.svg?branch=master)](https://travis-ci.org/benjaminch/openrtb-pricers)
 
+## Overview
 This library supports RTB development for Open RTB common price encryption in Golang.
+
+## Installation
+```bash
+$ go get github.com/benjaminch/openrtb-pricers
+```
 
 ## Supported encryption protocols
 ### Google Private Data
@@ -52,8 +58,7 @@ if err != nil {
 }
 ```
 ## Todos
-- [ ] Complete documentation :
-  - [ ] How to install the library
+- [ ] Complete documentation:
   - [ ] How to use the Pricer Builder (describing all params)
   - [ ] How to use the Pricer Encrypt function (describing all params)
   - [ ] How to use the Pricer Decrypt function (describing all params)
