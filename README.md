@@ -40,7 +40,7 @@ result, err = pricer.Encrypt(
     false  // No debug
 )
 if err != nil {
-    t.Errorf("Encryption failed. Error : %s", err)
+    err = errors.New("Encryption failed. Error : %s", err)
 }
 ```
 ##### Decrypting an encrypted price
@@ -54,7 +54,7 @@ result, err = pricer.Decrypt(
     false,                                     // No debug
 )
 if err != nil {
-    t.Errorf("Decryption failed. Error : %s", err)
+    err = errors.New("Decryption failed. Error : %s", err)
 }
 ```
 ## Todos
