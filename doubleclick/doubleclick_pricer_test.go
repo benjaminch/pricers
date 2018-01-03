@@ -7,8 +7,8 @@ import (
 	testshelpers "github.com/benjaminch/openrtb-pricers/tests_helpers"
 )
 
-func BuildNewPricer(encryptionKey string, integrityKey string, isBase64Keys bool, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*Pricer, error) {
-	return NewPricer(encryptionKey, integrityKey, isBase64Keys, keyDecodingMode, scaleFactor, isDebugMode)
+func BuildNewDoubleClickPricer(encryptionKey string, integrityKey string, isBase64Keys bool, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
+	return NewDoubleClickPricer(encryptionKey, integrityKey, isBase64Keys, keyDecodingMode, scaleFactor, isDebugMode)
 }
 
 type PriceTestCase struct {
@@ -20,15 +20,56 @@ func NewPriceTestCase(encrypted string, clear float64) PriceTestCase {
 	return PriceTestCase{encrypted: encrypted, clear: clear}
 }
 
+/*
+func TestDecryptGoogleOfficialExamples(t *testing.T) {
+	// From specs examples
+	// https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
+
+	var pricer *DoubleClickPricer
+	var err error
+	pricer, err = BuildNewDoubleClickPricer(
+		"arO23ykdNqUQ5LEoQ0FVmPkBd7xB5CO89PDZlSjpFxo=",
+		"skU7Ax_NL5pPAFyKdkfZjZz2-VhIN8bjj1rVFOaJ_5o=",
+		true, // Keys are base64
+		helpers.Utf8,
+		1000000,
+		false,
+	)
+
+	if err != nil {
+		t.Error("Error creating new Pricer : ", err)
+	}
+
+	// Encrypted prices we will try to decrypt
+	var pricesTestCase = []PriceTestCase{
+		NewPriceTestCase("WEp8wQAAAABnFd5EkB2k1wJeFcAj-Z_JVOeGzA", 0.1),
+		NewPriceTestCase("WEp8sQAAAACwF6CtLJrXSRFBM8UiTTIyngN-og", 1.900),
+		NewPriceTestCase("WEp8nQAAAAADG-y45xxIC1tMWuTjzmDW6HtroQ", 2.700),
+	}
+
+	for _, encryptedPrice := range pricesTestCase {
+		var result float64
+		var err error
+		result, err = pricer.Decrypt(encryptedPrice.encrypted, false)
+		if err != nil {
+			t.Errorf("Decryption failed. Error : %s", err)
+		}
+		if !testshelpers.FloatEquals(result, encryptedPrice.clear) {
+			t.Errorf("Decryption failed. Should be : %f but was : %f", encryptedPrice.clear, result)
+		}
+	}
+}
+*/
+
 func TestDecryptWithHexaKeys(t *testing.T) {
 
 	// Create a pricer with:
 	// - HEX keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *Pricer
+	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = BuildNewPricer(
+	pricer, err = BuildNewDoubleClickPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
 		false, // Keys are not base64
@@ -69,9 +110,9 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 	// - UTF-8 keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *Pricer
+	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = BuildNewPricer(
+	pricer, err = BuildNewDoubleClickPricer(
 		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
 		false, // Keys are not base64
@@ -111,9 +152,9 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 	// - HEX keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *Pricer
+	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = BuildNewPricer(
+	pricer, err = BuildNewDoubleClickPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
 		false, // Keys are not base64
@@ -166,9 +207,9 @@ func TestEncryptDecryptWithHexaKeys(t *testing.T) {
 	// - HEX keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *Pricer
+	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = BuildNewPricer(
+	pricer, err = BuildNewDoubleClickPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
 		false, // Keys are not base64
@@ -220,9 +261,9 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 	// - UTF-8 keys
 	// - Price scale factor as micro
 	// - No debug mode
-	var pricer *Pricer
+	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = BuildNewPricer(
+	pricer, err = BuildNewDoubleClickPricer(
 		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
 		false, // Keys are not base64

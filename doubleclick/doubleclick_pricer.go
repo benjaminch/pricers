@@ -13,9 +13,9 @@ import (
 	"github.com/golang/glog"
 )
 
-// Pricer implementing price encryption and decryption
+// DoubleClickPricer implementing price encryption and decryption
 // Specs : https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
-type Pricer struct {
+type DoubleClickPricer struct {
 	encryptionKeyRaw string
 	integrityKeyRaw  string
 	encryptionKey    hash.Hash
@@ -25,13 +25,13 @@ type Pricer struct {
 	isDebugMode      bool
 }
 
-// NewPricer returns a DoubleClickPricer struct.
-func NewPricer(encryptionKey string,
+// NewDoubleClickPricer returns a DoubleClickPricer struct.
+func NewDoubleClickPricer(encryptionKey string,
 	integrityKey string,
 	isBase64Keys bool,
 	keyDecodingMode helpers.KeyDecodingMode,
 	scaleFactor float64,
-	isDebugMode bool) (*Pricer, error) {
+	isDebugMode bool) (*DoubleClickPricer, error) {
 	var err error
 	var encryptingFun, integrityFun hash.Hash
 
@@ -62,7 +62,7 @@ func NewPricer(encryptionKey string,
 		glog.Info("Integrity key (bytes) : ", []byte(integrityKeyHexa))
 	}
 
-	return &Pricer{
+	return &DoubleClickPricer{
 			encryptionKeyRaw: encryptionKey,
 			integrityKeyRaw:  integrityKey,
 			encryptionKey:    encryptingFun,
@@ -74,7 +74,7 @@ func NewPricer(encryptionKey string,
 }
 
 // Encrypt encrypts a clear price and a given seed.
-func (dc *Pricer) Encrypt(
+func (dc *DoubleClickPricer) Encrypt(
 	seed string,
 	price float64,
 	isDebugMode bool) (string, error) {
@@ -128,7 +128,7 @@ func (dc *Pricer) Encrypt(
 }
 
 // Decrypt decrypts an ecrypted price.
-func (dc *Pricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
+func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
 	var err error
 	var errPrice float64
 
