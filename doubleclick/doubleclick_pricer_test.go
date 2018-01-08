@@ -191,9 +191,50 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 	}
 }
 
+/*
 func TestEncryptWithUtf8Keys(t *testing.T) {
-	// TODO : To be implemented
+	// Create a pricer with:
+	// - UTF-8 keys
+	// - Price scale factor as micro
+	// - No debug mode
+	var pricer *DoubleClickPricer
+	var err error
+	pricer, err = BuildNewDoubleClickPricer(
+		"ZS_Cg8KtwqBUUVfCocK3w7sMDgnDtcKeczczL8OnwqvDlMOrEETCm8KOw6bDg8KRNQ",
+		"wr0KPcO7woLCrcKVw4XDpj4Vwppiw7c8asOKwpjCuiTClTIhwpR1wp1RLXfDqyvCtQ",
+		false, // Keys are base64
+		helpers.Utf8,
+		1000000,
+		false,
+	)
+
+	if err != nil {
+		t.Error("Error creating new Pricer : ", err)
+	}
+
+	// Clear prices we will try to encrypt
+	var pricesTestCase = []PriceTestCase{
+		NewPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGavHOuu-2SA==", 1.354),
+		NewPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGTyiewYLbwg==", 3.24),
+		NewPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGcRqedwjz2g==", 1),
+		NewPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGc8xOTOXIGA==", 0.89),
+		NewPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJDi7nevR9kUw==", 100),
+		NewPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGfn_O2Zdh_g==", 0.01),
+	}
+
+	for _, price := range pricesTestCase {
+		var result string
+		var err error
+		result, err = pricer.Encrypt("", price.clear, false)
+		if err != nil {
+			t.Errorf("Encryption failed. Error : %s", err)
+		}
+		if result != price.encrypted {
+			t.Errorf("Encryption failed. Should be : %s but was : %s", price.encrypted, result)
+		}
+	}
 }
+*/
 
 func TestEncryptWithScaleFactor(t *testing.T) {
 	// TODO : To be implemented
@@ -307,6 +348,143 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 		// Assert that the decrypted price is the one with encrypted in a first place
 		if !testshelpers.FloatEquals(decrypted, price.clear) {
 			t.Errorf("Decryption failed. Should be : %f but was : %f", price.clear, decrypted)
+		}
+	}
+}
+
+func TestEncryptDecryptWithSeed(t *testing.T) {
+	// Seeds to test
+	var seedsToTest = []string{"", "test", "a", "b", "azertyuiopmlkjhgfdsqwxcvbn"}
+
+	// Prices to be encrypted / decrypted
+	var pricesTestCase = []PriceTestCase{
+		NewPriceTestCase("", 1.465),
+		NewPriceTestCase("", 0),
+		NewPriceTestCase("", 100),
+		NewPriceTestCase("", 1.45676),
+		NewPriceTestCase("", 1.0),
+		NewPriceTestCase("", 1000),
+	}
+
+	// Create a pricer with:
+	// - HEX keys
+	// - Price scale factor as micro
+	// - No debug mode
+	var pricer *DoubleClickPricer
+	var err error
+	pricer, err = BuildNewDoubleClickPricer(
+		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
+		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
+		false, // Keys are not base64
+		helpers.Hexa,
+		1000000,
+		false,
+	)
+
+	if err != nil {
+		t.Error("Error creating new Pricer : ", err)
+	}
+
+	var encryptedPrices []string
+
+	for _, seed := range seedsToTest {
+
+		for _, price := range pricesTestCase {
+			var decrypted float64
+			var encrypted string
+			var err error
+
+			// Encrypt
+			encrypted, err = pricer.Encrypt(seed, price.clear, false)
+			if err != nil {
+				t.Errorf("Encryption failed. Error : %s", err)
+			}
+			// Store encrypted prices for further tests
+			encryptedPrices = append(encryptedPrices, encrypted)
+
+			// Decrypt
+			decrypted, err = pricer.Decrypt(encrypted, false)
+			if err != nil {
+				t.Errorf("Decryption failed. Error : %s", err)
+			}
+
+			// Assert that the decrypted price is the one with encrypted in a first place
+			if !testshelpers.FloatEquals(decrypted, price.clear) {
+				t.Errorf("Decryption failed. Should be : %f but was : %f (seed : %s)", price.clear, decrypted, seed)
+			}
+		}
+	}
+
+	// Checking that every single encrypted prices are different to each others
+	// checking only the same prices with all seeds
+	initialPricesCount := len(pricesTestCase)
+	for i, encryptedPrice := range encryptedPrices {
+		if i < initialPricesCount-1 && encryptedPrice == encryptedPrices[i+initialPricesCount] {
+			t.Errorf("Encrypted prices are the same but they shouldn't : price : %f, encrypted : %s, seed : %s", pricesTestCase[i].clear, encryptedPrice, seedsToTest[i%initialPricesCount])
+		}
+	}
+}
+
+func TestEncryptDecryptWithScaleFactor(t *testing.T) {
+
+	// Scale factors to test
+	var scaleFactorsToTest = []float64{0.1, 1, 10, 50, 100, 10000}
+
+	// Prices we will try to encrypt / decrypt
+	// Because by design, the price is stored as int64 before encryption
+	// we need to encrypt big prices in order to be able to test a full
+	// range of scale factors (from 0.1 to 10,000).
+	// Not doing so will end up having rounding issue.
+	var pricesTestCase = []PriceTestCase{
+		NewPriceTestCase("", 13540),
+		NewPriceTestCase("", 3240),
+		NewPriceTestCase("", 10),
+		NewPriceTestCase("", 890),
+		NewPriceTestCase("", 1000),
+	}
+
+	for _, scaleFactor := range scaleFactorsToTest {
+
+		// Create a pricer with:
+		// - HEX keys
+		// - Price scale factor as micro
+		// - No debug mode
+		var pricer *DoubleClickPricer
+		var err error
+		pricer, err = BuildNewDoubleClickPricer(
+			"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
+			"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
+			false, // Keys are not base64
+			helpers.Hexa,
+			scaleFactor,
+			false,
+		)
+
+		if err != nil {
+			t.Error("Error creating new Pricer : ", err)
+		}
+
+		for _, price := range pricesTestCase {
+			var decrypted float64
+			var encrypted string
+			var err error
+
+			// Encrypt
+			encrypted, err = pricer.Encrypt("", price.clear, false)
+			if err != nil {
+				t.Errorf("Encryption failed. Error : %s", err)
+			}
+
+			// Decrypt
+			decrypted, err = pricer.Decrypt(encrypted, false)
+			if err != nil {
+				t.Errorf("Decryption failed. Error : %s", err)
+			}
+
+			// Assert that the decrypted price is the one with encrypted in a first place
+			if !testshelpers.FloatEquals(decrypted, price.clear) {
+				t.Errorf("Decryption failed. Should be : %f but was : %f (scale factor : %f)", price.clear, decrypted, scaleFactor)
+			}
 		}
 	}
 }
