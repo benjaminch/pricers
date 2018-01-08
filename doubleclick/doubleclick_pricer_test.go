@@ -20,7 +20,6 @@ func NewPriceTestCase(encrypted string, clear float64) PriceTestCase {
 	return PriceTestCase{encrypted: encrypted, clear: clear}
 }
 
-/*
 func TestDecryptGoogleOfficialExamples(t *testing.T) {
 	// From specs examples
 	// https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
@@ -28,8 +27,8 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 	var pricer *DoubleClickPricer
 	var err error
 	pricer, err = BuildNewDoubleClickPricer(
-		"arO23ykdNqUQ5LEoQ0FVmPkBd7xB5CO89PDZlSjpFxo=",
-		"skU7Ax_NL5pPAFyKdkfZjZz2-VhIN8bjj1rVFOaJ_5o=",
+		"ZS-DraBUUVeht_sMDgn1nnM3My_nq9TrEESbjubDkTU",
+		"vQo9-4KtlcXmPhWaYvc8asqYuiSVMiGUdZ1RLXfrK7U",
 		true, // Keys are base64
 		helpers.Utf8,
 		1000000,
@@ -42,9 +41,12 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 
 	// Encrypted prices we will try to decrypt
 	var pricesTestCase = []PriceTestCase{
-		NewPriceTestCase("WEp8wQAAAABnFd5EkB2k1wJeFcAj-Z_JVOeGzA", 0.1),
-		NewPriceTestCase("WEp8sQAAAACwF6CtLJrXSRFBM8UiTTIyngN-og", 1.900),
-		NewPriceTestCase("WEp8nQAAAAADG-y45xxIC1tMWuTjzmDW6HtroQ", 2.700),
+		NewPriceTestCase("anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg", 1.354),
+		NewPriceTestCase("ce131TRp7waIZI2qOiRr2DMm2sSIeGh_wIAwVQ", 3.24),
+		NewPriceTestCase("K6tfPnPvN_5E2xS3GssrFYeouJJRkBQqxR_FxQ", 1),
+		NewPriceTestCase("lEzCWnwgB21Dy2_H43PKZeZaNDstZZElZRFTDQ", 0.89),
+		NewPriceTestCase("L91lB6giyIXh2o4CeUf0F7sCXozKWRXAUeMUfg", 100),
+		NewPriceTestCase("8WY0BgWbds1eEVNFkrXVIr1GU08iueKrP0wXfw", 0.01),
 	}
 
 	for _, encryptedPrice := range pricesTestCase {
@@ -59,7 +61,6 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 		}
 	}
 }
-*/
 
 func TestDecryptWithHexaKeys(t *testing.T) {
 
