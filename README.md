@@ -19,7 +19,7 @@ import pricers "github.com/benjaminch/openrtb-pricers"
 
 var pricer *pricers.DoubleClickPricer
 var err error
-pricer, err = doubleclick.NewDoubleClickPricer(
+pricer, err = pricers.NewDoubleClickPricer(
     "skU7Ax_NL5pPAFyKdkfZjZz2-VhIN8bjj1rVFOaJ_5o=",  // Encryption key
     "arO23ykdNqUQ5LEoQ0FVmPkBd7xB5CO89PDZlSjpFxo=",  // Integrity key
     true,                                            // Keys are base64
