@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"hash"
 	"strings"
@@ -15,10 +16,36 @@ import (
 
 type KeyDecodingMode string
 
+func (kd KeyDecodingMode) String() string {
+	return string(kd)
+}
+
 const (
 	Utf8 KeyDecodingMode = "utf-8"
-	Hexa                 = "hexa"
+	Hexa KeyDecodingMode = "hexa"
 )
+
+func ParseKeyDecodingMode(input string) (KeyDecodingMode, error) {
+	var err error
+	var parsed KeyDecodingMode
+
+	if input == "" {
+		err = errors.New("input is empty, cannot parse empty input")
+	} else {
+		switch input {
+		case Utf8.String():
+			parsed = Utf8
+			break
+		case Hexa.String():
+			parsed = Hexa
+			break
+		default:
+			err = errors.New("input doesn't match to any key decoding mode")
+		}
+	}
+
+	return parsed, err
+}
 
 func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, error) {
 	var err error
