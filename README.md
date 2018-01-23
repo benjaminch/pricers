@@ -62,5 +62,6 @@ if err != nil {
   - [ ] How to use the Pricer Builder (describing all params)
   - [ ] How to use the Pricer Encrypt function (describing all params)
   - [ ] How to use the Pricer Decrypt function (describing all params)
+- [ ] Complete tests for helpers
 - [ ] Complete tests for Google Private Data, including various key formats (hex, utf8, base64, etc.)
 - [ ] Add other most common price encryption protocols (AES, etc.)
