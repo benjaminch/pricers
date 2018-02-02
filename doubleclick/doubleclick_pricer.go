@@ -26,22 +26,13 @@ type DoubleClickPricer struct {
 }
 
 // NewDoubleClickPricer returns a DoubleClickPricer struct.
-//
-// Pricer requires the following params:
-//    - encryptionKey:      The encryption key, either in base 64 websafe of hexa
-//    - integrityKey:       The integrity key, either in base 64 websafe of hexa
-//    - keyDecodingMode:    Method used to decode keys either,
-//                          KeyDecodingMode.Utf8 or KeyDecodingMode.Hexa
-//    - scaleFactor:        Factor the clear price will be multiplied by before encryption.
-//                          from specs, scaleFactor is 1,000,000, but you can set something else.
-//                          Be aware that the price is stored as an int64 so depending on the digits
-//                          precision you want, picking a scale factor smaller than 1,000,000 may lead
-//                          to price to be rounded and loose some digits precision.
-//    - isDebugMode:        If debug mode is on, extra logs are fired.
-//
-// Returns
-//    - *DoubleClickPricer: Newly created pricer if no errors, nil otherwise.
-//    - error:              Error occuring while creating pricer or nil if no error.
+// Keys are either base 64 websafe of hexa. keyDecodingMode
+// should be used to specify how keys should be decoded.
+// Factor the clear price will be multiplied by before encryption.
+// from specs, scaleFactor is 1,000,000, but you can set something else.
+// Be aware that the price is stored as an int64 so depending on the digits
+// precision you want, picking a scale factor smaller than 1,000,000 may lead
+// to price to be rounded and loose some digits precision.
 func NewDoubleClickPricer(
 	encryptionKey string,
 	integrityKey string,
@@ -91,17 +82,6 @@ func NewDoubleClickPricer(
 }
 
 // Encrypt encrypts a clear price and a given seed.
-//
-// Encrypt requires the following params:
-//    - seed:        Seed to be used while encrypting.
-//                   The better is to used a different seed for each encryption.
-//                   An empty seed is also valid.
-//    - price:       Price to be encrypted
-//    - isDebugMode: If debug mode is on, extra logs are fired.
-//
-// Returns
-//    - string:      Encrypted price string.
-//    - error:       Error occuring while encrypting price or nil if no error.
 func (dc *DoubleClickPricer) Encrypt(
 	seed string,
 	price float64,
@@ -156,14 +136,6 @@ func (dc *DoubleClickPricer) Encrypt(
 }
 
 // Decrypt decrypts an ecrypted price.
-//
-// Decrypt requires the following params:
-//    - encryptedPrice: Encrypted price to decrypt.
-//    - isDebugMode:    If debug mode is on, extra logs are fired.
-//
-// Returns
-//    - float64:        Decrypted price.
-//    - error:          Error occuring while decrypting price or nil if no error.
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
 	var err error
 	var errPrice float64
