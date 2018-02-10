@@ -1,7 +1,6 @@
 # openrtb-pricers
 [![Build Status](https://travis-ci.org/benjaminch/openrtb-pricers.svg?branch=master)](https://travis-ci.org/benjaminch/openrtb-pricers)
 [![GoDoc](https://godoc.org/github.com/benjaminch/openrtb-pricers?status.svg)](https://godoc.org/github.com/benjaminch/openrtb-pricers)
-[![Coverage Status](https://coveralls.io/repos/github/benjaminch/openrtb-pricers/badge.svg?branch=master)](https://coveralls.io/github/benjaminch/openrtb-pricers?branch=master)
 
 ## Overview
 This library supports RTB development for Open RTB common price encryption in Golang.
