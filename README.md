@@ -66,3 +66,6 @@ if err != nil {
 - [ ] Complete tests for helpers
 - [ ] Complete tests for Google Private Data, including various key formats (hex, utf8, base64, etc.)
 - [ ] Add other most common price encryption protocols (AES, etc.)
+   - [ ] BlowFish
+   - [ ] Symetric Algorithm
+   - [ ] XOR
