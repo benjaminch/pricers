@@ -58,13 +58,13 @@ func NewDoubleClickPricer(
 		fmt.Println("Encryption key : ", encryptionKey)
 		encryptionKeyHexa, err := hex.DecodeString(encryptionKey)
 		if err != nil {
-			return nil, err
+			encryptionKeyHexa = []byte(encryptionKey)
 		}
 		fmt.Println("Encryption key (bytes) : ", []byte(encryptionKeyHexa))
 		fmt.Println("Integrity key : ", integrityKey)
 		integrityKeyHexa, err := hex.DecodeString(integrityKey)
 		if err != nil {
-			return nil, err
+			integrityKeyHexa = []byte(integrityKey)
 		}
 		fmt.Println("Integrity key (bytes) : ", []byte(integrityKeyHexa))
 	}
