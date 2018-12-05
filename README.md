@@ -62,6 +62,7 @@ if err != nil {
 }
 ```
 ## Todos
+- [ ] Re-organize directory layout following https://github.com/golang-standards/project-layout
 - [ ] Complete documentation:
   - [ ] How to use the Pricer Builder (describing all params)
   - [ ] How to use the Pricer Encrypt function (describing all params)
