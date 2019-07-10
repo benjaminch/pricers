@@ -209,12 +209,12 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 
 	// Clear prices we will try to encrypt
 	var pricesTestCase = []priceTestCase{
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGavHOuu-2SA==", 1.354, 1000000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGTyiewYLbwg==", 3.24, 1000000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGcRqedwjz2g==", 1, 1000000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGc8xOTOXIGA==", 0.89, 1000000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJDi7nevR9kUw==", 100, 1000000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGfn_O2Zdh_g==", 0.01, 1000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGavHOuu-2SA", 1.354, 1000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGTyiewYLbwg", 3.24, 1000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGcRqedwjz2g", 1, 1000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGc8xOTOXIGA", 0.89, 1000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJDi7nevR9kUw", 100, 1000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGfn_O2Zdh_g", 0.01, 1000000),
 	}
 
 	for _, price := range pricesTestCase {
@@ -281,12 +281,12 @@ func TestEncryptWithScaleFactor(t *testing.T) {
 
 	// Setup:
 	var pricesTestCase = []priceTestCase{
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGVwr-Q_z9Cw==", 1.354, 2000000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGNHC-ozlJ9Q==", 3.24, 1500000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGf95-RX4DPw==", 1, 100000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGc8xOTOXIGA==", 0.89, 1000000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJEhKheuuMVqg==", 100, 500000),
-		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGfn-cvGvYQg==", 0.01, 1005000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGVwr-Q_z9Cw", 1.354, 2000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGNHC-ozlJ9Q", 3.24, 1500000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGf95-RX4DPw", 1, 100000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGc8xOTOXIGA", 0.89, 1000000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJEhKheuuMVqg", 100, 500000),
+		newPriceTestCase("1B2M2Y8AsgTpgAmY7PhCfgDo9mJGfn-cvGvYQg", 0.01, 1005000),
 	}
 
 	for _, priceTestCase := range pricesTestCase {
