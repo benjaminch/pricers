@@ -1,4 +1,13 @@
-sudo: false
 language: go
-install: go get -t -v ./...
-go: 1.13
+go:
+  - 1.12.x
+  - master
+os:
+  - linux
+  - osx
+dist: trusty
+sudo: false
+install: true
+script:
+  - env GO111MODULE=on go build
+  - env GO111MODULE=on go test
