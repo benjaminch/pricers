@@ -24,8 +24,8 @@ import "github.com/benjaminch/openrtb-pricers/doubleclick"
 var pricer *doubleclick.DoubleClickPricer
 var err error
 pricer, err = doubleclick.NewDoubleClickPricer(
-    "skU7Ax_NL5pPAFyKdkfZjZz2-VhIN8bjj1rVFOaJ_5o=",  // Encryption key
-    "arO23ykdNqUQ5LEoQ0FVmPkBd7xB5CO89PDZlSjpFxo=",  // Integrity key
+    "ZS-DraBUUVeht_sMDgn1nnM3My_nq9TrEESbjubDkTU",   // Encryption key
+    "vQo9-4KtlcXmPhWaYvc8asqYuiSVMiGUdZ1RLXfrK7U",   // Integrity key
     true,                                            // Keys are base64
     helpers.Utf8,                                    // Keys should be ingested as Utf-8
     1000000,                                         // Price scale Factor Micro
