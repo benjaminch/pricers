@@ -1,16 +1,16 @@
-# openrtb-pricers
-[![Build Status](https://travis-ci.org/benjaminch/openrtb-pricers.svg?branch=master)](https://travis-ci.org/benjaminch/openrtb-pricers)
-[![GoDoc](https://godoc.org/github.com/benjaminch/openrtb-pricers?status.svg)](https://godoc.org/github.com/benjaminch/openrtb-pricers)
-[![Go Report Card](https://goreportcard.com/badge/github.com/benjaminch/openrtb-pricers)](https://goreportcard.com/report/github.com/benjaminch/openrtb-pricers)
-[![Maintainability](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/maintainability)](https://codeclimate.com/github/benjaminch/openrtb-pricers/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/test_coverage)](https://codeclimate.com/github/benjaminch/openrtb-pricers/test_coverage)
+# pricers
+[![Build Status](https://travis-ci.org/benjaminch/pricers.svg?branch=master)](https://travis-ci.org/benjaminch/pricers)
+[![GoDoc](https://godoc.org/github.com/benjaminch/pricers?status.svg)](https://godoc.org/github.com/benjaminch/openrtb-pricers)
+[![Go Report Card](https://goreportcard.com/badge/github.com/benjaminch/pricers)](https://goreportcard.com/report/github.com/benjaminch/openrtb-pricers)
+[![Maintainability](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/maintainability)](https://codeclimate.com/github/benjaminch/pricers/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/test_coverage)](https://codeclimate.com/github/benjaminch/pricers/test_coverage)
 
 ## Overview
 This library supports RTB development for Open RTB common price encryption in Golang.
 
 ## Installation
 ```bash
-$ go get github.com/benjaminch/openrtb-pricers
+$ go get github.com/benjaminch/pricers
 ```
 
 ## Supported encryption protocols
@@ -19,7 +19,7 @@ Specs https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
 #### Examples
 ##### Creating a new Google Private Data Pricer
 ```golang
-import "github.com/benjaminch/openrtb-pricers/doubleclick"
+import "github.com/benjaminch/pricers/doubleclick"
 
 var pricer *doubleclick.DoubleClickPricer
 var err error
@@ -34,7 +34,7 @@ pricer, err = doubleclick.NewDoubleClickPricer(
 ```
 ##### Encrypting a clear price
 ```golang
-import "github.com/benjaminch/openrtb-pricers/doubleclick"
+import "github.com/benjaminch/pricers/doubleclick"
 
 var result string
 var err error
@@ -49,7 +49,7 @@ if err != nil {
 ```
 ##### Decrypting an encrypted price
 ```golang
-import "github.com/benjaminch/openrtb-pricers/doubleclick"
+import "github.com/benjaminch/pricers/doubleclick"
 
 var result float64
 var err error
