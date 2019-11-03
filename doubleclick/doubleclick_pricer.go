@@ -7,8 +7,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
 	"hash"
+	"strings"
 
 	"github.com/benjaminch/openrtb-pricers/helpers"
 
@@ -132,7 +132,7 @@ func (dc *DoubleClickPricer) Encrypt(
 	}
 
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
-	return strings.TrimRight(base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)),"="), err
+	return strings.TrimRight(base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), "="), err
 }
 
 // Decrypt decrypts an ecrypted price.
