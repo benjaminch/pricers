@@ -1,7 +1,7 @@
 # pricers
 [![Build Status](https://travis-ci.org/benjaminch/pricers.svg?branch=master)](https://travis-ci.org/benjaminch/pricers)
-[![GoDoc](https://godoc.org/github.com/benjaminch/pricers?status.svg)](https://godoc.org/github.com/benjaminch/openrtb-pricers)
-[![Go Report Card](https://goreportcard.com/badge/github.com/benjaminch/pricers)](https://goreportcard.com/report/github.com/benjaminch/openrtb-pricers)
+[![GoDoc](https://godoc.org/github.com/benjaminch/pricers?status.svg)](https://godoc.org/github.com/benjaminch/pricers)
+[![Go Report Card](https://goreportcard.com/badge/github.com/benjaminch/pricers)](https://goreportcard.com/report/github.com/benjaminch/pricers)
 [![Maintainability](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/maintainability)](https://codeclimate.com/github/benjaminch/pricers/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/test_coverage)](https://codeclimate.com/github/benjaminch/pricers/test_coverage)
 
