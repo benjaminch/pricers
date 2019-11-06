@@ -4,6 +4,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/benjaminch/pricers)](https://goreportcard.com/report/github.com/benjaminch/pricers)
 [![Maintainability](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/maintainability)](https://codeclimate.com/github/benjaminch/pricers/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/95e0f8491d86d90c6da6/test_coverage)](https://codeclimate.com/github/benjaminch/pricers/test_coverage)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/benjaminch/pricers)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/benjaminch/pricers)
 
 ## Overview
 This library supports RTB development for Open RTB common price encryption in Golang.
