@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/benjaminch/openrtb-pricers/helpers"
+	"github.com/benjaminch/pricers/helpers"
 )
 
 func buildNewDoubleClickPricer(encryptionKey string, integrityKey string, isBase64Keys bool, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {

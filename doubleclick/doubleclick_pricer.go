@@ -10,7 +10,7 @@ import (
 	"hash"
 	"strings"
 
-	"github.com/benjaminch/openrtb-pricers/helpers"
+	"github.com/benjaminch/pricers/helpers"
 
 	"github.com/golang/glog"
 )
