@@ -1,4 +1,4 @@
-module github.com/benjaminch/openrtb-pricers
+module github.com/benjaminch/pricers
 
 go 1.12
 
