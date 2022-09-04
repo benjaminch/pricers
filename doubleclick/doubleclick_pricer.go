@@ -125,7 +125,7 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 	}
 
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
-	return strings.TrimRight(base64.URLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), "="), err
+	return base64.RawURLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), err
 }
 
 // Decrypt decrypts an ecrypted price.
@@ -133,9 +133,10 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	var err error
 	var errPrice float64
 
-	// Decode base64
-	encryptedPrice = helpers.AddBase64Padding(encryptedPrice)
-	decoded, err := base64.URLEncoding.DecodeString(encryptedPrice)
+	// Decode base64 url
+	// Just to be safe remove padding if it was added by mistake
+	encryptedPrice = strings.TrimRight(encryptedPrice, "=")
+	decoded, err := base64.RawURLEncoding.DecodeString(encryptedPrice)
 	if err != nil {
 		return errPrice, err
 	}
