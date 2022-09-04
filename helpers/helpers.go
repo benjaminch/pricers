@@ -10,8 +10,6 @@ import (
 	"fmt"
 	"hash"
 	"strings"
-
-	"github.com/golang/glog"
 )
 
 // KeyDecodingMode : Describing how keys should be decoded.
@@ -105,8 +103,8 @@ func ApplyScaleFactor(price float64, scaleFactor float64, isDebugMode bool) [8]b
 	scaledPrice := [8]byte{}
 	binary.BigEndian.PutUint64(scaledPrice[:], uint64(price*scaleFactor))
 
-	if isDebugMode == true || glog.V(2) {
-		glog.Info(fmt.Sprintf("Micro price bytes: %v", scaledPrice))
+	if isDebugMode {
+		fmt.Printf("Micro price bytes: %v", scaledPrice)
 	}
 
 	return scaledPrice
