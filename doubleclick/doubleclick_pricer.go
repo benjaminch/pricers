@@ -11,8 +11,6 @@ import (
 	"strings"
 
 	"github.com/benjaminch/pricers/helpers"
-
-	"github.com/golang/glog"
 )
 
 // DoubleClickPricer implementing price encryption and decryption
@@ -92,8 +90,6 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 		signature [4]byte
 	)
 
-	defer glog.Flush()
-
 	data := helpers.ApplyScaleFactor(price, dc.scaleFactor, dc.isDebugMode)
 
 	// Create Initialization Vector from seed
@@ -156,8 +152,6 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 		signature  [4]byte
 		priceMicro [8]byte
 	)
-
-	defer glog.Flush()
 
 	copy(iv[:], decoded[0:16])
 	copy(p[:], decoded[16:24])
