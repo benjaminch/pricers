@@ -35,30 +35,26 @@ pricer, err = doubleclick.NewDoubleClickPricer(
 )
 ```
 ##### Encrypting a clear price
-```golang
+```go
 import "github.com/benjaminch/pricers/doubleclick"
 
 var result string
 var err error
-result, err = pricer.Encrypt(
-    "",    // Seed
-    1,     // Clear price
-    false  // No debug
-)
+price := 42 // Clear price
+seed := ""
+result, err = pricer.Encrypt(seed, price, false)
 if err != nil {
     err = errors.New("Encryption failed. Error : %s", err)
 }
 ```
 ##### Decrypting an encrypted price
-```golang
+```go
 import "github.com/benjaminch/pricers/doubleclick"
 
 var result float64
 var err error
-result, err = pricer.Decrypt(
-    "WEp8nQAAAAADG-y45xxIC1tMWuTjzmDW6HtroQ",  // Encrypted price
-    false,                                     // No debug
-)
+encryptedPrice := "WEp8nQAAAAADG-y45xxIC1tMWuTjzmDW6HtroQ"
+result, err = pricer.Decrypt(encryptedPrice, false)
 if err != nil {
     err = errors.New("Decryption failed. Error : %s", err)
 }
