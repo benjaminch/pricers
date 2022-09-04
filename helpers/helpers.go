@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"hash"
-	"strings"
 )
 
 // KeyDecodingMode : Describing how keys should be decoded.
@@ -57,7 +56,7 @@ func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, err
 	var k []byte
 
 	if isBase64 {
-		b64DecodedKey, err = base64.URLEncoding.DecodeString(AddBase64Padding(key))
+		b64DecodedKey, err = base64.RawURLEncoding.DecodeString(key)
 		if err == nil {
 			// If no error, then use the base 64 decoded key
 			key = string(b64DecodedKey[:])
@@ -82,19 +81,6 @@ func HmacSum(hmac hash.Hash, buf []byte) []byte {
 	hmac.Reset()
 	hmac.Write(buf)
 	return hmac.Sum(nil)
-}
-
-// AddBase64Padding : Returns base 64 string adding extra padding if needed.
-func AddBase64Padding(base64Input string) string {
-	var base64 string
-
-	base64 = base64Input
-
-	if i := len(base64) % 4; i != 0 {
-		base64 += strings.Repeat("=", 4-i)
-	}
-
-	return base64
 }
 
 // ApplyScaleFactor : Applies a scale factor to a given price.
