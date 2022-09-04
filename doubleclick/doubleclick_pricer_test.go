@@ -54,7 +54,7 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 		// Execute:
 		var result float64
 		var err error
-		result, err = pricer.Decrypt(encryptedPrice.encrypted, false)
+		result, err = pricer.Decrypt(encryptedPrice.encrypted)
 
 		// Verify:
 		assert.Nil(t, err, "Decryption failed. Error : %s", err)
@@ -96,7 +96,7 @@ func TestDecryptWithHexaKeys(t *testing.T) {
 		// Execute:
 		var result float64
 		var err error
-		result, err = pricer.Decrypt(encryptedPrice.encrypted, false)
+		result, err = pricer.Decrypt(encryptedPrice.encrypted)
 
 		// Verify:
 		assert.Nil(t, err, "Decryption failed. Error : %s", err)
@@ -133,7 +133,7 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 		// Execute:
 		var result float64
 		var err error
-		result, err = pricer.Decrypt(encryptedPrice.encrypted, false)
+		result, err = pricer.Decrypt(encryptedPrice.encrypted)
 
 		// Verify:
 		assert.Nil(t, err, "Decryption failed. Error : %s", err)
@@ -175,7 +175,7 @@ func TestDecryptWithScaleFactor(t *testing.T) {
 
 		// Execute:
 		var result float64
-		result, err = pricer.Decrypt(priceTestCase.encrypted, false)
+		result, err = pricer.Decrypt(priceTestCase.encrypted)
 
 		// Verify:
 		assert.Nil(t, err, "Decryption failed. Error : %s", err)
@@ -221,7 +221,7 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 		// Execute:
 		var result string
 		var err error
-		result, err = pricer.Encrypt("", price.clear, false)
+		result, err = pricer.Encrypt("", price.clear)
 
 		// Verify:
 		assert.Nil(t, err, "Encryption failed. Error : %s", err)
@@ -263,7 +263,7 @@ func TestEncryptWithUtf8Keys(t *testing.T) {
 	for _, price := range pricesTestCase {
 		var result string
 		var err error
-		result, err = pricer.Encrypt("", price.clear, false)
+		result, err = pricer.Encrypt("", price.clear)
 		if err != nil {
 			t.Errorf("Encryption failed. Error : %s", err)
 		}
@@ -309,7 +309,7 @@ func TestEncryptWithScaleFactor(t *testing.T) {
 
 		// Execute:
 		var result string
-		result, err = pricer.Encrypt("", priceTestCase.clear, false)
+		result, err = pricer.Encrypt("", priceTestCase.clear)
 
 		// Verify:
 		assert.Nil(t, err, "Encryption failed. Error : %s", err)
@@ -358,11 +358,11 @@ func TestEncryptDecryptWithHexaKeys(t *testing.T) {
 		var err error
 
 		// Encrypt
-		encrypted, err = pricer.Encrypt("", price.clear, false)
+		encrypted, err = pricer.Encrypt("", price.clear)
 		assert.Nil(t, err, "Encryption failed. Error : %s", err)
 
 		// Decrypt
-		decrypted, err = pricer.Decrypt(encrypted, false)
+		decrypted, err = pricer.Decrypt(encrypted)
 		assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
 
 		// Verify:
@@ -408,11 +408,11 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 		var err error
 
 		// Encrypt
-		encrypted, err = pricer.Encrypt("", price.clear, false)
+		encrypted, err = pricer.Encrypt("", price.clear)
 		assert.Nil(t, err, "Encryption failed. Error : %s", err)
 
 		// Decrypt
-		decrypted, err = pricer.Decrypt(encrypted, false)
+		decrypted, err = pricer.Decrypt(encrypted)
 		assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
 
 		// Verify:
@@ -464,11 +464,11 @@ func TestEncryptDecryptWithSeed(t *testing.T) {
 			var err error
 
 			// Encrypt
-			encrypted, err = pricer.Encrypt(seed, price.clear, false)
+			encrypted, err = pricer.Encrypt(seed, price.clear)
 			assert.Nil(t, err, "Encryption failed. Error : %s", err)
 
 			// Decrypt
-			decrypted, err = pricer.Decrypt(encrypted, false)
+			decrypted, err = pricer.Decrypt(encrypted)
 			assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
 
 			// Verify:
@@ -529,11 +529,11 @@ func TestEncryptDecryptWithScaleFactor(t *testing.T) {
 			var err error
 
 			// Encrypt
-			encrypted, err = pricer.Encrypt("", price.clear, false)
+			encrypted, err = pricer.Encrypt("", price.clear)
 			assert.Nil(t, err, "Encryption failed. Error : %s", err)
 
 			// Decrypt
-			decrypted, err = pricer.Decrypt(encrypted, false)
+			decrypted, err = pricer.Decrypt(encrypted)
 			assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
 
 			// Verify:

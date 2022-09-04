@@ -42,7 +42,7 @@ var result string
 var err error
 price := 42 // Clear price
 seed := ""
-result, err = pricer.Encrypt(seed, price, false)
+result, err = pricer.Encrypt(seed, price)
 if err != nil {
     err = errors.New("Encryption failed. Error : %s", err)
 }
@@ -54,7 +54,7 @@ import "github.com/benjaminch/pricers/doubleclick"
 var result float64
 var err error
 encryptedPrice := "WEp8nQAAAAADG-y45xxIC1tMWuTjzmDW6HtroQ"
-result, err = pricer.Decrypt(encryptedPrice, false)
+result, err = pricer.Decrypt(encryptedPrice)
 if err != nil {
     err = errors.New("Decryption failed. Error : %s", err)
 }

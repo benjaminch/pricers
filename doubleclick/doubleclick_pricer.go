@@ -82,10 +82,7 @@ func NewDoubleClickPricer(
 }
 
 // Encrypt encrypts a clear price and a given seed.
-func (dc *DoubleClickPricer) Encrypt(
-	seed string,
-	price float64,
-	isDebugMode bool) (string, error) {
+func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error) {
 	var err error
 
 	// Result
@@ -97,19 +94,19 @@ func (dc *DoubleClickPricer) Encrypt(
 
 	defer glog.Flush()
 
-	data := helpers.ApplyScaleFactor(price, dc.scaleFactor, isDebugMode)
+	data := helpers.ApplyScaleFactor(price, dc.scaleFactor, dc.isDebugMode)
 
 	// Create Initialization Vector from seed
 	sum := md5.Sum([]byte(seed))
 	copy(iv[:], sum[:])
-	if isDebugMode == true {
+	if dc.isDebugMode == true {
 		fmt.Println("Seed : ", seed)
 		fmt.Println("Initialization vector : ", iv)
 	}
 
 	//pad = hmac(e_key, iv), first 8 bytes
 	pad := helpers.HmacSum(dc.encryptionKey, iv[:])[:8]
-	if isDebugMode == true {
+	if dc.isDebugMode == true {
 		fmt.Println("// pad = hmac(e_key, iv), first 8 bytes")
 		fmt.Println("Pad : ", pad)
 	}
@@ -118,7 +115,7 @@ func (dc *DoubleClickPricer) Encrypt(
 	for i := range data {
 		encoded[i] = pad[i] ^ data[i]
 	}
-	if isDebugMode == true {
+	if dc.isDebugMode == true {
 		fmt.Println("// enc_data = pad <xor> data")
 		fmt.Println("Encoded price bytes : ", encoded)
 	}
@@ -126,7 +123,7 @@ func (dc *DoubleClickPricer) Encrypt(
 	// signature = hmac(i_key, data || iv), first 4 bytes
 	sig := helpers.HmacSum(dc.integrityKey, append(data[:], iv[:]...))[:4]
 	copy(signature[:], sig[:])
-	if isDebugMode == true {
+	if dc.isDebugMode == true {
 		fmt.Println("// signature = hmac(i_key, data || iv), first 4 bytes")
 		fmt.Println("Signature : ", sig)
 	}
@@ -136,7 +133,7 @@ func (dc *DoubleClickPricer) Encrypt(
 }
 
 // Decrypt decrypts an ecrypted price.
-func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (float64, error) {
+func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	var err error
 	var errPrice float64
 
@@ -147,7 +144,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (f
 		return errPrice, err
 	}
 
-	if isDebugMode == true {
+	if dc.isDebugMode == true {
 		fmt.Println("Encrypted price : ", encryptedPrice)
 		fmt.Println("Base64 decoded price : ", decoded)
 	}
@@ -169,7 +166,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string, isDebugMode bool) (f
 	// pad = hmac(e_key, iv)
 	pad := helpers.HmacSum(dc.encryptionKey, iv[:])[:8]
 
-	if isDebugMode == true {
+	if dc.isDebugMode == true {
 		fmt.Println("IV : ", hex.EncodeToString(iv[:]))
 		fmt.Println("Encoded price : ", hex.EncodeToString(p[:]))
 		fmt.Println("Signature : ", hex.EncodeToString(signature[:]))
