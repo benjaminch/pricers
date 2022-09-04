@@ -52,7 +52,7 @@ func NewDoubleClickPricer(
 		return nil, err
 	}
 
-	if isDebugMode == true {
+	if isDebugMode {
 		fmt.Println("Keys decoding mode : ", keyDecodingMode)
 		fmt.Println("Encryption key : ", encryptionKey)
 		encryptionKeyHexa, err := hex.DecodeString(encryptionKey)
@@ -76,14 +76,11 @@ func NewDoubleClickPricer(
 			keyDecodingMode:  keyDecodingMode,
 			scaleFactor:      scaleFactor,
 			isDebugMode:      isDebugMode},
-		err
+		nil
 }
 
 // Encrypt encrypts a clear price and a given seed.
 func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error) {
-	var err error
-
-	// Result
 	var (
 		iv        [16]byte
 		encoded   [8]byte
@@ -95,14 +92,14 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 	// Create Initialization Vector from seed
 	sum := md5.Sum([]byte(seed))
 	copy(iv[:], sum[:])
-	if dc.isDebugMode == true {
+	if dc.isDebugMode {
 		fmt.Println("Seed : ", seed)
 		fmt.Println("Initialization vector : ", iv)
 	}
 
 	//pad = hmac(e_key, iv), first 8 bytes
 	pad := helpers.HmacSum(dc.encryptionKey, iv[:])[:8]
-	if dc.isDebugMode == true {
+	if dc.isDebugMode {
 		fmt.Println("// pad = hmac(e_key, iv), first 8 bytes")
 		fmt.Println("Pad : ", pad)
 	}
@@ -111,7 +108,7 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 	for i := range data {
 		encoded[i] = pad[i] ^ data[i]
 	}
-	if dc.isDebugMode == true {
+	if dc.isDebugMode {
 		fmt.Println("// enc_data = pad <xor> data")
 		fmt.Println("Encoded price bytes : ", encoded)
 	}
@@ -119,16 +116,16 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 	// signature = hmac(i_key, data || iv), first 4 bytes
 	sig := helpers.HmacSum(dc.integrityKey, append(data[:], iv[:]...))[:4]
 	copy(signature[:], sig[:])
-	if dc.isDebugMode == true {
+	if dc.isDebugMode {
 		fmt.Println("// signature = hmac(i_key, data || iv), first 4 bytes")
 		fmt.Println("Signature : ", sig)
 	}
 
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
-	return base64.RawURLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), err
+	return base64.RawURLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), nil
 }
 
-// Decrypt decrypts an ecrypted price.
+// Decrypt decrypts an encrypted price.
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	var err error
 	var errPrice float64
@@ -141,7 +138,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 		return errPrice, err
 	}
 
-	if dc.isDebugMode == true {
+	if dc.isDebugMode {
 		fmt.Println("Encrypted price : ", encryptedPrice)
 		fmt.Println("Base64 decoded price : ", decoded)
 	}
@@ -161,7 +158,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	// pad = hmac(e_key, iv)
 	pad := helpers.HmacSum(dc.encryptionKey, iv[:])[:8]
 
-	if dc.isDebugMode == true {
+	if dc.isDebugMode {
 		fmt.Println("IV : ", hex.EncodeToString(iv[:]))
 		fmt.Println("Encoded price : ", hex.EncodeToString(p[:]))
 		fmt.Println("Signature : ", hex.EncodeToString(signature[:]))
@@ -184,5 +181,5 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	}
 	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
 
-	return price, err
+	return price, nil
 }
