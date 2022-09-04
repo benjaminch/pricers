@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"hash"
+	"strings"
 )
 
 // KeyDecodingMode : Describing how keys should be decoded.
@@ -56,7 +57,7 @@ func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, err
 	var k []byte
 
 	if isBase64 {
-		b64DecodedKey, err = base64.RawURLEncoding.DecodeString(key)
+		b64DecodedKey, err = base64.RawURLEncoding.DecodeString(strings.TrimRight(key, "="))
 		if err == nil {
 			// If no error, then use the base 64 decoded key
 			key = string(b64DecodedKey[:])
