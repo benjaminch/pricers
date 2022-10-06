@@ -13,6 +13,9 @@ import (
 	"github.com/benjaminch/pricers/helpers"
 )
 
+var ErrTooShort = errors.New("price is too short")
+var ErrSignatureInvalid = errors.New("failed to decrypt")
+
 // DoubleClickPricer implementing price encryption and decryption
 // Specs : https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
 type DoubleClickPricer struct {
@@ -151,6 +154,10 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 		priceMicro [8]byte
 	)
 
+	if len(decoded) < 28 {
+		return errPrice, ErrTooShort
+	}
+
 	copy(iv[:], decoded[0:16])
 	copy(p[:], decoded[16:24])
 	copy(signature[:], decoded[24:28])
@@ -176,7 +183,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	// success = (conf_sig == sig)
 	for i := range sig {
 		if sig[i] != signature[i] {
-			return errPrice, errors.New("Failed to decrypt")
+			return errPrice, ErrSignatureInvalid
 		}
 	}
 	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
