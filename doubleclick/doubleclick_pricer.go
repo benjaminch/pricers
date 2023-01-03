@@ -104,6 +104,13 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 		fmt.Println("Pad : ", pad)
 	}
 
+	// signature = hmac(i_key, data || iv), first 4 bytes
+	signature = helpers.HmacSum(dc.integrityKey, data[:], iv[:])[:4]
+	if dc.isDebugMode {
+		fmt.Println("// signature = hmac(i_key, data || iv), first 4 bytes")
+		fmt.Println("Signature : ", signature)
+	}
+
 	// enc_data = pad <xor> data
 	for i := range data {
 		encoded[i] = pad[i] ^ data[i]
@@ -111,13 +118,6 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 	if dc.isDebugMode {
 		fmt.Println("// enc_data = pad <xor> data")
 		fmt.Println("Encoded price bytes : ", encoded)
-	}
-
-	// signature = hmac(i_key, data || iv), first 4 bytes
-	signature = helpers.HmacSum(dc.integrityKey, data[:], iv[:])[:4]
-	if dc.isDebugMode {
-		fmt.Println("// signature = hmac(i_key, data || iv), first 4 bytes")
-		fmt.Println("Signature : ", signature)
 	}
 
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
