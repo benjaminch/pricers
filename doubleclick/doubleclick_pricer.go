@@ -1,6 +1,7 @@
 package doubleclick
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/binary"
@@ -169,13 +170,11 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	}
 
 	// conf_sig = hmac(i_key, data || iv)
-	sig := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv)[:4]
+	confirmationSignature := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv)[:4]
 
 	// success = (conf_sig == sig)
-	for i := range sig {
-		if sig[i] != signature[i] {
-			return errPrice, errors.New("Failed to decrypt")
-		}
+	if !bytes.Equal(confirmationSignature, signature) {
+		return errPrice, errors.New("Failed to decrypt")
 	}
 	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
 
