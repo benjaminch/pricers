@@ -143,24 +143,24 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 
 	// Get elements
 	var (
-		iv         [16]byte
-		p          [8]byte
-		signature  [4]byte
+		iv         []byte
+		p          []byte
+		signature  []byte
 		priceMicro [8]byte
 	)
 
-	copy(iv[:], decoded[0:16])
-	copy(p[:], decoded[16:24])
-	copy(signature[:], decoded[24:28])
+	iv = decoded[0:16]
+	p = decoded[16:24]
+	signature = decoded[24:28]
 
 	// pad = hmac(e_key, iv)
-	pad := helpers.HmacSum(dc.encryptionKey, iv[:], nil)[:8]
+	pad := helpers.HmacSum(dc.encryptionKey, iv, nil)[:8]
 
 	if dc.isDebugMode {
-		fmt.Println("IV : ", hex.EncodeToString(iv[:]))
-		fmt.Println("Encoded price : ", hex.EncodeToString(p[:]))
-		fmt.Println("Signature : ", hex.EncodeToString(signature[:]))
-		fmt.Println("Pad : ", hex.EncodeToString(pad[:]))
+		fmt.Println("IV : ", hex.EncodeToString(iv))
+		fmt.Println("Encoded price : ", hex.EncodeToString(p))
+		fmt.Println("Signature : ", hex.EncodeToString(signature))
+		fmt.Println("Pad : ", hex.EncodeToString(pad))
 	}
 
 	// priceMicro = p <xor> pad
@@ -169,7 +169,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	}
 
 	// conf_sig = hmac(i_key, data || iv)
-	sig := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv[:])[:4]
+	sig := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv)[:4]
 
 	// success = (conf_sig == sig)
 	for i := range sig {
