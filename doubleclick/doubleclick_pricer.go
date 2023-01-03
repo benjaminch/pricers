@@ -84,14 +84,13 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 	var (
 		iv        [16]byte
 		encoded   [8]byte
-		signature [4]byte
+		signature []byte
 	)
 
 	data := helpers.ApplyScaleFactor(price, dc.scaleFactor, dc.isDebugMode)
 
 	// Create Initialization Vector from seed
-	sum := md5.Sum([]byte(seed))
-	copy(iv[:], sum[:])
+	iv = md5.Sum([]byte(seed))
 	if dc.isDebugMode {
 		fmt.Println("Seed : ", seed)
 		fmt.Println("Initialization vector : ", iv)
@@ -114,15 +113,14 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error)
 	}
 
 	// signature = hmac(i_key, data || iv), first 4 bytes
-	sig := helpers.HmacSum(dc.integrityKey, data[:], iv[:])[:4]
-	copy(signature[:], sig[:])
+	signature = helpers.HmacSum(dc.integrityKey, data[:], iv[:])[:4]
 	if dc.isDebugMode {
 		fmt.Println("// signature = hmac(i_key, data || iv), first 4 bytes")
-		fmt.Println("Signature : ", sig)
+		fmt.Println("Signature : ", signature)
 	}
 
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
-	return base64.RawURLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature[:]...)), nil
+	return base64.RawURLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature...)), nil
 }
 
 // Decrypt decrypts an encrypted price.
