@@ -14,6 +14,9 @@ import (
 	"github.com/benjaminch/pricers/helpers"
 )
 
+var ErrWrongSize = errors.New("Encrypted price is not 38 chars")
+var ErrWrongSignature = errors.New("Failed to decrypt")
+
 // DoubleClickPricer implementing price encryption and decryption
 // Specs : https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
 type DoubleClickPricer struct {
@@ -132,6 +135,9 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 	// Decode base64 url
 	// Just to be safe remove padding if it was added by mistake
 	encryptedPrice = strings.TrimRight(encryptedPrice, "=")
+	if len(encryptedPrice) != 38 {
+		return errPrice, ErrWrongSize
+	}
 	decoded, err := base64.RawURLEncoding.DecodeString(encryptedPrice)
 	if err != nil {
 		return errPrice, err
@@ -174,7 +180,7 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 
 	// success = (conf_sig == sig)
 	if !bytes.Equal(confirmationSignature, signature) {
-		return errPrice, errors.New("Failed to decrypt")
+		return errPrice, ErrWrongSignature
 	}
 	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
 
