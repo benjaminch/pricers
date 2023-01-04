@@ -22,6 +22,27 @@ func newPriceTestCase(encrypted string, clear float64, scaleFactor float64) pric
 	return priceTestCase{encrypted: encrypted, clear: clear, scaleFactor: scaleFactor}
 }
 
+func TestDecryptEmpty(t *testing.T) {
+	var pricer *DoubleClickPricer
+	var err error
+	pricer, err = buildNewDoubleClickPricer(
+		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
+		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
+		false, // Keys are not base64
+		helpers.Utf8,
+		1000000,
+		false,
+	)
+
+	assert.Nil(t, err, "Error creating new Pricer : ", err)
+	// Execute:
+	var result float64
+	result, err = pricer.Decrypt("")
+	// Verify:
+	assert.Equal(t, err, ErrWrongSize)
+	assert.Equal(t, float64(0), result)
+}
+
 func TestDecryptGoogleOfficialExamples(t *testing.T) {
 	// From specs examples
 	// https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
