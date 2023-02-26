@@ -464,7 +464,7 @@ func TestDecryptRawAlloc(t *testing.T) {
 	assert.Equal(t, float64(1), mallocs)
 }
 
-// BenchmarkDecrypt-8       1816929               657.1 ns/op
+// BenchmarkDecrypt-8       1831339               649.4 ns/op
 func BenchmarkDecrypt(b *testing.B) {
 	pricer := buildPricer()
 	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
@@ -473,7 +473,7 @@ func BenchmarkDecrypt(b *testing.B) {
 	}
 }
 
-// BenchmarkDecryptRaw-8            2003535               588.9 ns/op
+// BenchmarkDecryptRaw-8            2003535               583.1 ns/op
 func BenchmarkDecryptRaw(b *testing.B) {
 	pricer := buildPricer()
 	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"

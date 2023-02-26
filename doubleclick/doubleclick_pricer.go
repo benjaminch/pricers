@@ -120,24 +120,24 @@ func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte, buf []byte) (uint
 
 	// Get elements
 	iv := decoded[0:16]
-	p := decoded[16:24]
-	signature := decoded[24:28]
+	p := binary.BigEndian.Uint64(decoded[16:24])
+	signature := binary.BigEndian.Uint32(decoded[24:28])
 
 	// pad = hmac(e_key, iv)
-	pad := helpers.HmacSum(dc.encryptionKey, iv, nil, hmacBuf)[:8]
+	padBytes := helpers.HmacSum(dc.encryptionKey, iv, nil, hmacBuf)[:8]
+	pad := binary.BigEndian.Uint64(padBytes)
 
 	// priceMicro = p <xor> pad
+	priceInMicros := pad ^ p
 	priceMicro := [8]byte{}
-	for i := range p {
-		priceMicro[i] = pad[i] ^ p[i]
-	}
-	priceInMicros := binary.BigEndian.Uint64(priceMicro[:])
+	binary.BigEndian.PutUint64(priceMicro[:], priceInMicros)
 
 	// conf_sig = hmac(i_key, data || iv)
-	confirmationSignature := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv, hmacBuf)[:4]
+	confirmationSignatureBytes := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv, hmacBuf)[:4]
+	confirmationSignature := binary.BigEndian.Uint32(confirmationSignatureBytes)
 
 	// success = (conf_sig == sig)
-	if !bytes.Equal(confirmationSignature, signature) {
+	if confirmationSignature != signature {
 		return 0, ErrWrongSignature
 	}
 	return priceInMicros, nil
