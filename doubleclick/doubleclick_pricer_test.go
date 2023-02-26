@@ -11,20 +11,19 @@ import (
 // Create a pricer with:
 // - HEX keys
 // - Price scale factor as micro
-func buildPricer() (*DoubleClickPricer, error) {
+func buildPricer() *DoubleClickPricer {
 	return buildPricerWithScale(1000000)
 }
 
-func buildPricerWithScale(scaleFactor float64) (*DoubleClickPricer, error) {
+func buildPricerWithScale(scaleFactor float64) *DoubleClickPricer {
 	var pricer *DoubleClickPricer
-	var err error
-	pricer, err = NewDoubleClickPricer(
+	pricer, _ = NewDoubleClickPricer(
 		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
 		false,
 		helpers.Hexa,
 		scaleFactor)
-	return pricer, err
+	return pricer
 }
 
 type priceTestCase struct {
@@ -38,7 +37,7 @@ func newPriceTestCase(encrypted string, clear float64, scaleFactor float64) pric
 }
 
 func TestDecryptEmpty(t *testing.T) {
-	pricer, _ := buildPricer()
+	pricer := buildPricer()
 
 	// Execute:
 	result, err := pricer.Decrypt("")
@@ -87,7 +86,7 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 
 func TestDecryptWithHexaKeys(t *testing.T) {
 	// Setup:
-	pricer, _ := buildPricer()
+	pricer := buildPricer()
 
 	// Encrypted prices we will try to decrypt
 	var pricesTestCase = []priceTestCase{
@@ -160,7 +159,7 @@ func TestDecryptWithScaleFactor(t *testing.T) {
 	}
 
 	for _, priceTestCase := range pricesTestCase {
-		pricer, _ := buildPricerWithScale(priceTestCase.scaleFactor)
+		pricer := buildPricerWithScale(priceTestCase.scaleFactor)
 
 		// Execute:
 		result, err := pricer.Decrypt(priceTestCase.encrypted)
@@ -173,7 +172,7 @@ func TestDecryptWithScaleFactor(t *testing.T) {
 
 func TestEncryptWithHexaKeys(t *testing.T) {
 	// Setup:
-	pricer, _ := buildPricer()
+	pricer := buildPricer()
 
 	// Clear prices we will try to encrypt
 	var pricesTestCase = []priceTestCase{
@@ -257,7 +256,7 @@ func TestEncryptWithScaleFactor(t *testing.T) {
 	}
 
 	for _, priceTestCase := range pricesTestCase {
-		pricer, _ := buildPricerWithScale(priceTestCase.scaleFactor)
+		pricer := buildPricerWithScale(priceTestCase.scaleFactor)
 
 		// Execute:
 		result, err := pricer.Encrypt("", priceTestCase.clear)
@@ -270,7 +269,7 @@ func TestEncryptWithScaleFactor(t *testing.T) {
 
 func TestEncryptDecryptWithHexaKeys(t *testing.T) {
 	// Setup:
-	pricer, _ := buildPricer()
+	pricer := buildPricer()
 
 	// Clear prices to encrypt
 	var pricesTestCase = []priceTestCase{
@@ -364,7 +363,7 @@ func TestEncryptDecryptWithSeed(t *testing.T) {
 		newPriceTestCase("", 1000, 1000000),
 	}
 
-	pricer, _ := buildPricer()
+	pricer := buildPricer()
 
 	var encryptedPrices []string
 
@@ -418,7 +417,7 @@ func TestEncryptDecryptWithScaleFactor(t *testing.T) {
 
 	for _, scaleFactor := range scaleFactorsToTest {
 
-		pricer, _ := buildPricerWithScale(scaleFactor)
+		pricer := buildPricerWithScale(scaleFactor)
 
 		for _, price := range pricesTestCase {
 			// Execute:
