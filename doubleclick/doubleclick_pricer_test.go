@@ -1,6 +1,7 @@
 package doubleclick
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -425,5 +426,60 @@ func TestEncryptDecryptWithScaleFactor(t *testing.T) {
 			// Assert that the decrypted price is the one with encrypted in a first place
 			assert.InDelta(t, decrypted, price.clear, 0.001, "Decryption failed. Should be : %f but was : %f", price.clear, decrypted)
 		}
+	}
+}
+
+func TestDecryptAlloc(t *testing.T) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	// We can use testing.AllocsPerRun() but it gives only mallocs
+	// warmup
+	_, _ = pricer.Decrypt(encryptedPrice)
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
+	var memstats runtime.MemStats
+	runtime.ReadMemStats(&memstats)
+	mallocs := 0 - memstats.Mallocs
+	allocBytes := 0 - memstats.Alloc
+
+	// Run the function the specified number of times
+	_, _ = pricer.Decrypt(encryptedPrice)
+
+	// Read the final statistics
+	runtime.ReadMemStats(&memstats)
+	mallocs += memstats.Mallocs
+	allocBytes += memstats.Alloc
+
+	assert.Equal(t, uint64(5), mallocs)
+	assert.Equal(t, uint64(144), allocBytes)
+}
+
+func TestDecryptRawAlloc(t *testing.T) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	encryptedPriceBytes := []byte(encryptedPrice) // don't inline
+	buf := make([]byte, 28)
+	mallocs := testing.AllocsPerRun(1, func() {
+		_, _ = pricer.DecryptRaw(encryptedPriceBytes, buf)
+	})
+	assert.Equal(t, float64(3), mallocs)
+}
+
+// BenchmarkDecrypt-8       1708762               694.2 ns/op
+func BenchmarkDecrypt(b *testing.B) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	for i := 0; i < b.N; i++ {
+		_, _ = pricer.Decrypt(encryptedPrice)
+	}
+}
+
+// BenchmarkDecryptRaw-8            1830206               649.4 ns/op
+func BenchmarkDecryptRaw(b *testing.B) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	buf := make([]byte, 28)
+	encryptedPriceBytes := []byte(encryptedPrice) // don't inline
+	for i := 0; i < b.N; i++ {
+		_, _ = pricer.DecryptRaw(encryptedPriceBytes, buf)
 	}
 }

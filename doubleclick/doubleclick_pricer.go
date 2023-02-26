@@ -6,10 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
-	"hash"
-	"strings"
-
 	"github.com/benjaminch/pricers/helpers"
+	"hash"
 )
 
 var ErrWrongSize = errors.New("Encrypted price is not 38 chars")
@@ -95,22 +93,27 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) string {
 
 // Decrypt decrypts an encrypted price.
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
-	priceInMicros, err := dc.DecryptRaw(encryptedPrice)
+	buf := make([]byte, 28)
+	priceInMicros, err := dc.DecryptRaw([]byte(encryptedPrice), buf)
 	price := float64(priceInMicros) / dc.scaleFactor
 	return price, err
 }
 
-func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice string) (uint64, error) {
+// DecryptRaw decrypts an encrypted price.
+// It returns the price as integer in micros without applying a scaleFactor
+// You must pass a buffer for decoder so that can reused again to avoid allocation
+func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte, buf []byte) (uint64, error) {
 	// Decode base64 url
 	// Just to be safe remove padding if it was added by mistake
-	encryptedPrice = strings.TrimRight(encryptedPrice, "=")
+	encryptedPrice = bytes.TrimRight(encryptedPrice, "=")
 	if len(encryptedPrice) != 38 {
 		return 0, ErrWrongSize
 	}
-	decoded, err := base64.RawURLEncoding.DecodeString(encryptedPrice)
+	_, err := base64.RawURLEncoding.Decode(buf, encryptedPrice)
 	if err != nil {
 		return 0, err
 	}
+	decoded := buf
 
 	// Get elements
 	iv := decoded[0:16]
