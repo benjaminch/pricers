@@ -23,8 +23,7 @@ func buildPricerWithScale(scaleFactor float64) (*DoubleClickPricer, error) {
 		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
 		false,
 		helpers.Hexa,
-		scaleFactor,
-		false)
+		scaleFactor)
 	return pricer, err
 }
 
@@ -60,8 +59,7 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 		"vQo9-4KtlcXmPhWaYvc8asqYuiSVMiGUdZ1RLXfrK7U",
 		true,
 		helpers.Utf8,
-		1000000,
-		false)
+		1000000)
 
 	assert.Nil(t, err, "Error creating new Pricer : ", err)
 
@@ -126,8 +124,7 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
 		false,
 		helpers.Utf8,
-		1000000,
-		false)
+		1000000)
 
 	assert.Nil(t, err, "Error creating new Pricer : ", err)
 
@@ -318,8 +315,7 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
 		false,
 		helpers.Utf8,
-		1000000,
-		false)
+		1000000)
 
 	assert.Nil(t, err, "Error creating new Pricer : ", err)
 

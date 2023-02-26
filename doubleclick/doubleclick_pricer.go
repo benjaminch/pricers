@@ -39,8 +39,7 @@ func NewDoubleClickPricer(
 	integrityKey string,
 	isBase64Keys bool,
 	keyDecodingMode helpers.KeyDecodingMode,
-	scaleFactor float64,
-	isDebugMode bool) (*DoubleClickPricer, error) {
+	scaleFactor float64) (*DoubleClickPricer, error) {
 	var err error
 	var encryptingFun, integrityFun hash.Hash
 
