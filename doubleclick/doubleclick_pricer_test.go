@@ -183,12 +183,9 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 
 	for _, price := range pricesTestCase {
 		// Execute:
-		var result string
-		var err error
-		result, err = pricer.Encrypt("", price.clear)
+		result := pricer.Encrypt("", price.clear)
 
 		// Verify:
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
 		assert.Equal(t, result, price.encrypted, "Encryption failed. Should be : %s but was : %s", price.encrypted, result)
 	}
 }
@@ -256,10 +253,8 @@ func TestEncryptWithScaleFactor(t *testing.T) {
 		pricer := buildPricerWithScale(priceTestCase.scaleFactor)
 
 		// Execute:
-		result, err := pricer.Encrypt("", priceTestCase.clear)
+		result := pricer.Encrypt("", priceTestCase.clear)
 
-		// Verify:
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
 		assert.Equal(t, result, priceTestCase.encrypted, "Encryption failed. Should be : %s but was : %s (scale factor: %f)", priceTestCase.encrypted, result, priceTestCase.scaleFactor)
 	}
 }
@@ -285,8 +280,7 @@ func TestEncryptDecryptWithHexaKeys(t *testing.T) {
 		var err error
 
 		// Encrypt
-		encrypted, err = pricer.Encrypt("", price.clear)
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
+		encrypted = pricer.Encrypt("", price.clear)
 
 		// Decrypt
 		decrypted, err = pricer.Decrypt(encrypted)
@@ -332,8 +326,7 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 		var err error
 
 		// Encrypt
-		encrypted, err = pricer.Encrypt("", price.clear)
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
+		encrypted = pricer.Encrypt("", price.clear)
 
 		// Decrypt
 		decrypted, err = pricer.Decrypt(encrypted)
@@ -373,8 +366,7 @@ func TestEncryptDecryptWithSeed(t *testing.T) {
 			var err error
 
 			// Encrypt
-			encrypted, err = pricer.Encrypt(seed, price.clear)
-			assert.Nil(t, err, "Encryption failed. Error : %s", err)
+			encrypted = pricer.Encrypt(seed, price.clear)
 
 			// Decrypt
 			decrypted, err = pricer.Decrypt(encrypted)
@@ -423,8 +415,7 @@ func TestEncryptDecryptWithScaleFactor(t *testing.T) {
 			var err error
 
 			// Encrypt
-			encrypted, err = pricer.Encrypt("", price.clear)
-			assert.Nil(t, err, "Encryption failed. Error : %s", err)
+			encrypted = pricer.Encrypt("", price.clear)
 
 			// Decrypt
 			decrypted, err = pricer.Decrypt(encrypted)
