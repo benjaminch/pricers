@@ -58,6 +58,18 @@ func NewDoubleClickPricer(
 		nil
 }
 
+func NewDoubleClickPricerFromRawKeys(
+	encryptionKeyRaw []byte,
+	integrityKeyRaw []byte,
+	scaleFactor float64) *DoubleClickPricer {
+	encryptingFun := helpers.CreateHmac(encryptionKeyRaw)
+	integrityFun := helpers.CreateHmac(integrityKeyRaw)
+	return &DoubleClickPricer{
+		encryptionKey: encryptingFun,
+		integrityKey:  integrityFun,
+		scaleFactor:   scaleFactor}
+}
+
 // Encrypt encrypts a clear price and a given seed.
 func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error) {
 	var (

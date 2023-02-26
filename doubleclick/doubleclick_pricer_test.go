@@ -8,6 +8,9 @@ import (
 	"github.com/benjaminch/pricers/helpers"
 )
 
+var encryptionKeyRaw, _ = helpers.RawKeyBytes("652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135", false, helpers.Hexa)
+var integrityKeyRaw, _ = helpers.RawKeyBytes("bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5", false, helpers.Hexa)
+
 // Create a pricer with:
 // - HEX keys
 // - Price scale factor as micro
@@ -16,13 +19,7 @@ func buildPricer() *DoubleClickPricer {
 }
 
 func buildPricerWithScale(scaleFactor float64) *DoubleClickPricer {
-	var pricer *DoubleClickPricer
-	pricer, _ = NewDoubleClickPricer(
-		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-		false,
-		helpers.Hexa,
-		scaleFactor)
+	pricer := NewDoubleClickPricerFromRawKeys(encryptionKeyRaw, integrityKeyRaw, scaleFactor)
 	return pricer
 }
 
