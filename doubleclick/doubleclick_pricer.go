@@ -18,12 +18,9 @@ var ErrWrongSignature = errors.New("Failed to decrypt")
 // DoubleClickPricer implementing price encryption and decryption
 // Specs : https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
 type DoubleClickPricer struct {
-	encryptionKeyRaw string
-	integrityKeyRaw  string
-	encryptionKey    hash.Hash
-	integrityKey     hash.Hash
-	keyDecodingMode  helpers.KeyDecodingMode
-	scaleFactor      float64
+	encryptionKey hash.Hash
+	integrityKey  hash.Hash
+	scaleFactor   float64
 }
 
 // NewDoubleClickPricer returns a DoubleClickPricer struct.
@@ -53,12 +50,9 @@ func NewDoubleClickPricer(
 	}
 
 	return &DoubleClickPricer{
-			encryptionKeyRaw: encryptionKey,
-			integrityKeyRaw:  integrityKey,
-			encryptionKey:    encryptingFun,
-			integrityKey:     integrityFun,
-			keyDecodingMode:  keyDecodingMode,
-			scaleFactor:      scaleFactor},
+			encryptionKey: encryptingFun,
+			integrityKey:  integrityFun,
+			scaleFactor:   scaleFactor},
 		nil
 }
 
