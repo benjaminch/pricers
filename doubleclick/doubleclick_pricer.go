@@ -76,10 +76,10 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) string {
 	iv := md5.Sum([]byte(seed))
 
 	//pad = hmac(e_key, iv), first 8 bytes
-	pad := helpers.HmacSum(dc.encryptionKey, iv[:], nil)[:8]
+	pad := helpers.HmacSum(dc.encryptionKey, iv[:], nil, nil)[:8]
 
 	// signature = hmac(i_key, data || iv), first 4 bytes
-	signature := helpers.HmacSum(dc.integrityKey, data[:], iv[:])[:4]
+	signature := helpers.HmacSum(dc.integrityKey, data[:], iv[:], nil)[:4]
 
 	// enc_data = pad <xor> data
 	encoded := [8]byte{}
@@ -93,7 +93,7 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) string {
 
 // Decrypt decrypts an encrypted price.
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
-	buf := make([]byte, 28)
+	buf := make([]byte, 56)
 	priceInMicros, err := dc.DecryptRaw([]byte(encryptedPrice), buf)
 	price := float64(priceInMicros) / dc.scaleFactor
 	return price, err
@@ -101,19 +101,22 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 
 // DecryptRaw decrypts an encrypted price.
 // It returns the price as integer in micros without applying a scaleFactor
-// You must pass a buffer for decoder so that can reused again to avoid allocation
+// You must pass a buffer (56 bytes) for decoder so that can reused again to avoid allocation
 func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte, buf []byte) (uint64, error) {
+	// first 28 bytes of buf are used to decode price, second 28 for a hmac sum buffer
+	decoded := buf[:28]
+	hmacBuf := buf[28:]
+
 	// Decode base64 url
 	// Just to be safe remove padding if it was added by mistake
 	encryptedPrice = bytes.TrimRight(encryptedPrice, "=")
 	if len(encryptedPrice) != 38 {
 		return 0, ErrWrongSize
 	}
-	_, err := base64.RawURLEncoding.Decode(buf, encryptedPrice)
+	_, err := base64.RawURLEncoding.Decode(decoded, encryptedPrice)
 	if err != nil {
 		return 0, err
 	}
-	decoded := buf
 
 	// Get elements
 	iv := decoded[0:16]
@@ -121,21 +124,21 @@ func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte, buf []byte) (uint
 	signature := decoded[24:28]
 
 	// pad = hmac(e_key, iv)
-	pad := helpers.HmacSum(dc.encryptionKey, iv, nil)[:8]
+	pad := helpers.HmacSum(dc.encryptionKey, iv, nil, hmacBuf)[:8]
 
 	// priceMicro = p <xor> pad
 	priceMicro := [8]byte{}
 	for i := range p {
 		priceMicro[i] = pad[i] ^ p[i]
 	}
+	priceInMicros := binary.BigEndian.Uint64(priceMicro[:])
 
 	// conf_sig = hmac(i_key, data || iv)
-	confirmationSignature := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv)[:4]
+	confirmationSignature := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv, hmacBuf)[:4]
 
 	// success = (conf_sig == sig)
 	if !bytes.Equal(confirmationSignature, signature) {
 		return 0, ErrWrongSignature
 	}
-	priceInMicros := binary.BigEndian.Uint64(priceMicro[:])
 	return priceInMicros, nil
 }
