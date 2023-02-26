@@ -95,7 +95,12 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) string {
 
 // Decrypt decrypts an encrypted price.
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
+	priceInMicros, err := dc.DecryptRaw(encryptedPrice)
+	price := float64(priceInMicros) / dc.scaleFactor
+	return price, err
+}
 
+func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice string) (uint64, error) {
 	// Decode base64 url
 	// Just to be safe remove padding if it was added by mistake
 	encryptedPrice = strings.TrimRight(encryptedPrice, "=")
@@ -129,6 +134,5 @@ func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
 		return 0, ErrWrongSignature
 	}
 	priceInMicros := binary.BigEndian.Uint64(priceMicro[:])
-	price := float64(priceInMicros) / dc.scaleFactor
-	return price, nil
+	return priceInMicros, nil
 }
