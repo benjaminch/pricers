@@ -31,7 +31,7 @@ pricer, err = doubleclick.NewDoubleClickPricer(
     true,                                            // Keys are base64
     helpers.Utf8,                                    // Keys should be ingested as Utf-8
     1000000,                                         // Price scale Factor Micro
-    false,                                           // No debug
+    false,                                           // No debug. Deprecated
 )
 ```
 ##### Encrypting a clear price

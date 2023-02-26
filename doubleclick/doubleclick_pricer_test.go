@@ -117,7 +117,6 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 	// Create a pricer with:
 	// - UTF-8 keys
 	// - Price scale factor as micro
-	// - No debug mode
 
 	// Setup:
 	var pricer *DoubleClickPricer
@@ -175,10 +174,6 @@ func TestDecryptWithScaleFactor(t *testing.T) {
 	}
 }
 
-func TestDecryptWithDebug(t *testing.T) {
-	// TODO: To be implemented
-}
-
 func TestEncryptWithHexaKeys(t *testing.T) {
 	// Setup:
 	pricer, _ := buildPricer()
@@ -210,7 +205,6 @@ func TestEncryptWithUtf8Keys(t *testing.T) {
 	// Create a pricer with:
 	// - UTF-8 keys
 	// - Price scale factor as micro
-	// - No debug mode
 	var pricer *DoubleClickPricer
 	var err error
 	pricer, err = buildNewDoubleClickPricer(
@@ -315,7 +309,6 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 	// Create a pricer with:
 	// - UTF-8 keys
 	// - Price scale factor as micro
-	// - No debug mode
 
 	// Setup:
 	var pricer *DoubleClickPricer

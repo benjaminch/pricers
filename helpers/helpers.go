@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"hash"
 	"strings"
 )
@@ -89,13 +88,9 @@ func HmacSum(hmac hash.Hash, buf, buf2 []byte) []byte {
 
 // ApplyScaleFactor : Applies a scale factor to a given price.
 // Scaled price will be represented on 8 bytes.
-func ApplyScaleFactor(price float64, scaleFactor float64, isDebugMode bool) [8]byte {
+func ApplyScaleFactor(price float64, scaleFactor float64) [8]byte {
 	scaledPrice := [8]byte{}
 	binary.BigEndian.PutUint64(scaledPrice[:], uint64(price*scaleFactor))
-
-	if isDebugMode {
-		fmt.Printf("Micro price bytes: %v", scaledPrice)
-	}
 
 	return scaledPrice
 }
