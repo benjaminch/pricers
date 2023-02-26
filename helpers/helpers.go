@@ -49,8 +49,11 @@ func ParseKeyDecodingMode(input string) (KeyDecodingMode, error) {
 	return parsed, err
 }
 
-// CreateHmac : Returns Hash from input string.
-func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, error) {
+func CreateHmac(keyRaw []byte) hash.Hash {
+	return hmac.New(sha1.New, keyRaw)
+}
+
+func RawKeyBytes(key string, isBase64 bool, mode KeyDecodingMode) ([]byte, error) {
 	var err error
 	var b64DecodedKey []byte
 	var k []byte
@@ -72,8 +75,7 @@ func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, err
 	if err != nil {
 		return nil, err
 	}
-
-	return hmac.New(sha1.New, k), nil
+	return k, nil
 }
 
 // HmacSum : Returns Hmac sum bytes.

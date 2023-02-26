@@ -38,16 +38,18 @@ func NewDoubleClickPricer(
 	keyDecodingMode helpers.KeyDecodingMode,
 	scaleFactor float64) (*DoubleClickPricer, error) {
 	var err error
-	var encryptingFun, integrityFun hash.Hash
 
-	encryptingFun, err = helpers.CreateHmac(encryptionKey, isBase64Keys, keyDecodingMode)
+	encryptionKeyRaw, err := helpers.RawKeyBytes(encryptionKey, isBase64Keys, keyDecodingMode)
 	if err != nil {
 		return nil, err
 	}
-	integrityFun, err = helpers.CreateHmac(integrityKey, isBase64Keys, keyDecodingMode)
+	integrityKeyRaw, err := helpers.RawKeyBytes(integrityKey, isBase64Keys, keyDecodingMode)
 	if err != nil {
 		return nil, err
 	}
+
+	encryptingFun := helpers.CreateHmac(encryptionKeyRaw)
+	integrityFun := helpers.CreateHmac(integrityKeyRaw)
 
 	return &DoubleClickPricer{
 			encryptionKey: encryptingFun,
