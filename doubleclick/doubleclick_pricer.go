@@ -15,9 +15,12 @@ var ErrWrongSignature = errors.New("Failed to decrypt")
 
 // DoubleClickPricer implementing price encryption and decryption
 // Specs : https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
+// It's not thread safe so use PricersPool
 type DoubleClickPricer struct {
 	encryptionKey hash.Hash
 	integrityKey  hash.Hash
+	decoded       []byte // 28 bytes
+	hmacBuf       []byte // 28 bytes
 	scaleFactor   float64
 }
 
@@ -48,12 +51,16 @@ func NewDoubleClickPricer(
 
 	encryptingFun := helpers.CreateHmac(encryptionKeyRaw)
 	integrityFun := helpers.CreateHmac(integrityKeyRaw)
+	decoded := [28]byte{}
+	hmacBuf := [28]byte{}
 
 	return &DoubleClickPricer{
-			encryptionKey: encryptingFun,
-			integrityKey:  integrityFun,
-			scaleFactor:   scaleFactor},
-		nil
+		encryptionKey: encryptingFun,
+		integrityKey:  integrityFun,
+		scaleFactor:   scaleFactor,
+		decoded:       decoded[:],
+		hmacBuf:       hmacBuf[:],
+	}, nil
 }
 
 func NewDoubleClickPricerFromRawKeys(
@@ -62,10 +69,14 @@ func NewDoubleClickPricerFromRawKeys(
 	scaleFactor float64) *DoubleClickPricer {
 	encryptingFun := helpers.CreateHmac(encryptionKeyRaw)
 	integrityFun := helpers.CreateHmac(integrityKeyRaw)
+	decoded := [28]byte{}
+	hmacBuf := [28]byte{}
 	return &DoubleClickPricer{
 		encryptionKey: encryptingFun,
 		integrityKey:  integrityFun,
-		scaleFactor:   scaleFactor}
+		scaleFactor:   scaleFactor,
+		decoded:       decoded[:],
+		hmacBuf:       hmacBuf[:]}
 }
 
 // Encrypt encrypts a clear price and a given seed.
@@ -93,38 +104,32 @@ func (dc *DoubleClickPricer) Encrypt(seed string, price float64) string {
 
 // Decrypt decrypts an encrypted price.
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
-	buf := make([]byte, 56)
-	priceInMicros, err := dc.DecryptRaw([]byte(encryptedPrice), buf)
+	priceInMicros, err := dc.DecryptRaw([]byte(encryptedPrice))
 	price := float64(priceInMicros) / dc.scaleFactor
 	return price, err
 }
 
 // DecryptRaw decrypts an encrypted price.
 // It returns the price as integer in micros without applying a scaleFactor
-// You must pass a buffer (56 bytes) for decoder so that can reused again to avoid allocation
-func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte, buf []byte) (uint64, error) {
-	// first 28 bytes of buf are used to decode price, second 28 for a hmac sum buffer
-	decoded := buf[:28]
-	hmacBuf := buf[28:]
-
+func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte) (uint64, error) {
 	// Decode base64 url
 	// Just to be safe remove padding if it was added by mistake
 	encryptedPrice = bytes.TrimRight(encryptedPrice, "=")
 	if len(encryptedPrice) != 38 {
 		return 0, ErrWrongSize
 	}
-	_, err := base64.RawURLEncoding.Decode(decoded, encryptedPrice)
+	_, err := base64.RawURLEncoding.Decode(dc.decoded, encryptedPrice)
 	if err != nil {
 		return 0, err
 	}
 
 	// Get elements
-	iv := decoded[0:16]
-	p := binary.BigEndian.Uint64(decoded[16:24])
-	signature := binary.BigEndian.Uint32(decoded[24:28])
+	iv := dc.decoded[0:16]
+	p := binary.BigEndian.Uint64(dc.decoded[16:24])
+	signature := binary.BigEndian.Uint32(dc.decoded[24:28])
 
 	// pad = hmac(e_key, iv)
-	padBytes := helpers.HmacSum(dc.encryptionKey, iv, nil, hmacBuf)[:8]
+	padBytes := helpers.HmacSum(dc.encryptionKey, iv, nil, dc.hmacBuf)[:8]
 	pad := binary.BigEndian.Uint64(padBytes)
 
 	// priceMicro = p <xor> pad
@@ -133,7 +138,7 @@ func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte, buf []byte) (uint
 	binary.BigEndian.PutUint64(priceMicro[:], priceInMicros)
 
 	// conf_sig = hmac(i_key, data || iv)
-	confirmationSignatureBytes := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv, hmacBuf)[:4]
+	confirmationSignatureBytes := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv, dc.hmacBuf)[:4]
 	confirmationSignature := binary.BigEndian.Uint32(confirmationSignatureBytes)
 
 	// success = (conf_sig == sig)
