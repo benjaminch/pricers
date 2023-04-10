@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"hash"
 	"strings"
 )
@@ -50,8 +49,11 @@ func ParseKeyDecodingMode(input string) (KeyDecodingMode, error) {
 	return parsed, err
 }
 
-// CreateHmac : Returns Hash from input string.
-func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, error) {
+func CreateHmac(keyRaw []byte) hash.Hash {
+	return hmac.New(sha1.New, keyRaw)
+}
+
+func RawKeyBytes(key string, isBase64 bool, mode KeyDecodingMode) ([]byte, error) {
 	var err error
 	var b64DecodedKey []byte
 	var k []byte
@@ -73,29 +75,24 @@ func CreateHmac(key string, isBase64 bool, mode KeyDecodingMode) (hash.Hash, err
 	if err != nil {
 		return nil, err
 	}
-
-	return hmac.New(sha1.New, k), nil
+	return k, nil
 }
 
 // HmacSum : Returns Hmac sum bytes.
-func HmacSum(hmac hash.Hash, buf, buf2 []byte) []byte {
+func HmacSum(hmac hash.Hash, buf, buf2, hmacBuf []byte) []byte {
 	hmac.Reset()
 	hmac.Write(buf)
 	if buf2 != nil {
 		hmac.Write(buf2)
 	}
-	return hmac.Sum(nil)
+	return hmac.Sum(hmacBuf[:0])
 }
 
 // ApplyScaleFactor : Applies a scale factor to a given price.
 // Scaled price will be represented on 8 bytes.
-func ApplyScaleFactor(price float64, scaleFactor float64, isDebugMode bool) [8]byte {
+func ApplyScaleFactor(price float64, scaleFactor float64) [8]byte {
 	scaledPrice := [8]byte{}
 	binary.BigEndian.PutUint64(scaledPrice[:], uint64(price*scaleFactor))
-
-	if isDebugMode {
-		fmt.Printf("Micro price bytes: %v", scaledPrice)
-	}
 
 	return scaledPrice
 }

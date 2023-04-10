@@ -1,6 +1,7 @@
 package doubleclick
 
 import (
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -8,8 +9,19 @@ import (
 	"github.com/benjaminch/pricers/helpers"
 )
 
-func buildNewDoubleClickPricer(encryptionKey string, integrityKey string, isBase64Keys bool, keyDecodingMode helpers.KeyDecodingMode, scaleFactor float64, isDebugMode bool) (*DoubleClickPricer, error) {
-	return NewDoubleClickPricer(encryptionKey, integrityKey, isBase64Keys, keyDecodingMode, scaleFactor, isDebugMode)
+var encryptionKeyRaw, _ = helpers.RawKeyBytes("652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135", false, helpers.Hexa)
+var integrityKeyRaw, _ = helpers.RawKeyBytes("bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5", false, helpers.Hexa)
+
+// Create a pricer with:
+// - HEX keys
+// - Price scale factor as micro
+func buildPricer() *DoubleClickPricer {
+	return buildPricerWithScale(1000000)
+}
+
+func buildPricerWithScale(scaleFactor float64) *DoubleClickPricer {
+	pricer := NewDoubleClickPricerFromRawKeys(encryptionKeyRaw, integrityKeyRaw, scaleFactor)
+	return pricer
 }
 
 type priceTestCase struct {
@@ -23,21 +35,10 @@ func newPriceTestCase(encrypted string, clear float64, scaleFactor float64) pric
 }
 
 func TestDecryptEmpty(t *testing.T) {
-	var pricer *DoubleClickPricer
-	var err error
-	pricer, err = buildNewDoubleClickPricer(
-		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
-		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
-		false, // Keys are not base64
-		helpers.Utf8,
-		1000000,
-		false,
-	)
+	pricer := buildPricer()
 
-	assert.Nil(t, err, "Error creating new Pricer : ", err)
 	// Execute:
-	var result float64
-	result, err = pricer.Decrypt("")
+	result, err := pricer.Decrypt("")
 	// Verify:
 	assert.Equal(t, err, ErrWrongSize)
 	assert.Equal(t, float64(0), result)
@@ -50,14 +51,12 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 	// Setup:
 	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = buildNewDoubleClickPricer(
+	pricer, err = NewDoubleClickPricer(
 		"ZS-DraBUUVeht_sMDgn1nnM3My_nq9TrEESbjubDkTU",
 		"vQo9-4KtlcXmPhWaYvc8asqYuiSVMiGUdZ1RLXfrK7U",
-		true, // Keys are base64
+		true,
 		helpers.Utf8,
-		1000000,
-		false,
-	)
+		1000000)
 
 	assert.Nil(t, err, "Error creating new Pricer : ", err)
 
@@ -84,24 +83,8 @@ func TestDecryptGoogleOfficialExamples(t *testing.T) {
 }
 
 func TestDecryptWithHexaKeys(t *testing.T) {
-	// Create a pricer with:
-	// - HEX keys
-	// - Price scale factor as micro
-	// - No debug mode
-
 	// Setup:
-	var pricer *DoubleClickPricer
-	var err error
-	pricer, err = buildNewDoubleClickPricer(
-		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-		false, // Keys are not base64
-		helpers.Hexa,
-		1000000,
-		false,
-	)
-
-	assert.Nil(t, err, "Error creating new Pricer : ", err)
+	pricer := buildPricer()
 
 	// Encrypted prices we will try to decrypt
 	var pricesTestCase = []priceTestCase{
@@ -129,19 +112,16 @@ func TestDecryptWithUtf8Keys(t *testing.T) {
 	// Create a pricer with:
 	// - UTF-8 keys
 	// - Price scale factor as micro
-	// - No debug mode
 
 	// Setup:
 	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = buildNewDoubleClickPricer(
+	pricer, err = NewDoubleClickPricer(
 		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
-		false, // Keys are not base64
-		helpers.Utf8,
-		1000000,
 		false,
-	)
+		helpers.Utf8,
+		1000000)
 
 	assert.Nil(t, err, "Error creating new Pricer : ", err)
 
@@ -177,26 +157,10 @@ func TestDecryptWithScaleFactor(t *testing.T) {
 	}
 
 	for _, priceTestCase := range pricesTestCase {
-		// Create a pricer with:
-		// - HEX keys
-		// - Price scale factor as micro
-		// - No debug mode
-		var pricer *DoubleClickPricer
-		var err error
-		pricer, err = buildNewDoubleClickPricer(
-			"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-			"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-			false, // Keys are not base64
-			helpers.Hexa,
-			priceTestCase.scaleFactor,
-			false,
-		)
-
-		assert.Nil(t, err, "Error creating new Pricer : ", err)
+		pricer := buildPricerWithScale(priceTestCase.scaleFactor)
 
 		// Execute:
-		var result float64
-		result, err = pricer.Decrypt(priceTestCase.encrypted)
+		result, err := pricer.Decrypt(priceTestCase.encrypted)
 
 		// Verify:
 		assert.Nil(t, err, "Decryption failed. Error : %s", err)
@@ -204,29 +168,9 @@ func TestDecryptWithScaleFactor(t *testing.T) {
 	}
 }
 
-func TestDecryptWithDebug(t *testing.T) {
-	// TODO: To be implemented
-}
-
 func TestEncryptWithHexaKeys(t *testing.T) {
-	// Create a pricer with:
-	// - HEX keys
-	// - Price scale factor as micro
-	// - No debug mode
-
 	// Setup:
-	var pricer *DoubleClickPricer
-	var err error
-	pricer, err = buildNewDoubleClickPricer(
-		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-		false, // Keys are not base64
-		helpers.Hexa,
-		1000000,
-		false,
-	)
-
-	assert.Nil(t, err, "Error creating new Pricer : ", err)
+	pricer := buildPricer()
 
 	// Clear prices we will try to encrypt
 	var pricesTestCase = []priceTestCase{
@@ -240,12 +184,9 @@ func TestEncryptWithHexaKeys(t *testing.T) {
 
 	for _, price := range pricesTestCase {
 		// Execute:
-		var result string
-		var err error
-		result, err = pricer.Encrypt("", price.clear)
+		result := pricer.Encrypt("", price.clear)
 
 		// Verify:
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
 		assert.Equal(t, result, price.encrypted, "Encryption failed. Should be : %s but was : %s", price.encrypted, result)
 	}
 }
@@ -255,7 +196,6 @@ func TestEncryptWithUtf8Keys(t *testing.T) {
 	// Create a pricer with:
 	// - UTF-8 keys
 	// - Price scale factor as micro
-	// - No debug mode
 	var pricer *DoubleClickPricer
 	var err error
 	pricer, err = buildNewDoubleClickPricer(
@@ -311,56 +251,18 @@ func TestEncryptWithScaleFactor(t *testing.T) {
 	}
 
 	for _, priceTestCase := range pricesTestCase {
-		// Create a pricer with:
-		// - HEX keys
-		// - Price scale factor as micro
-		// - No debug mode
-		var pricer *DoubleClickPricer
-		var err error
-		pricer, err = buildNewDoubleClickPricer(
-			"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-			"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-			false, // Keys are not base64
-			helpers.Hexa,
-			priceTestCase.scaleFactor,
-			false,
-		)
-
-		assert.Nil(t, err, "Error creating new Pricer : ", err)
+		pricer := buildPricerWithScale(priceTestCase.scaleFactor)
 
 		// Execute:
-		var result string
-		result, err = pricer.Encrypt("", priceTestCase.clear)
+		result := pricer.Encrypt("", priceTestCase.clear)
 
-		// Verify:
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
 		assert.Equal(t, result, priceTestCase.encrypted, "Encryption failed. Should be : %s but was : %s (scale factor: %f)", priceTestCase.encrypted, result, priceTestCase.scaleFactor)
 	}
 }
 
-func TestEncryptWithDebug(t *testing.T) {
-	// TODO : To be implemented
-}
-
 func TestEncryptDecryptWithHexaKeys(t *testing.T) {
-	// Create a pricer with:
-	// - HEX keys
-	// - Price scale factor as micro
-	// - No debug mode
-
 	// Setup:
-	var pricer *DoubleClickPricer
-	var err error
-	pricer, err = buildNewDoubleClickPricer(
-		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-		false, // Keys are not base64
-		helpers.Hexa,
-		1000000,
-		false,
-	)
-
-	assert.Nil(t, err, "Error creating new Pricer : ", err)
+	pricer := buildPricer()
 
 	// Clear prices to encrypt
 	var pricesTestCase = []priceTestCase{
@@ -379,12 +281,11 @@ func TestEncryptDecryptWithHexaKeys(t *testing.T) {
 		var err error
 
 		// Encrypt
-		encrypted, err = pricer.Encrypt("", price.clear)
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
+		encrypted = pricer.Encrypt("", price.clear)
 
 		// Decrypt
 		decrypted, err = pricer.Decrypt(encrypted)
-		assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
+		assert.Nil(t, err, "Decryption failed. Error : %s", err)
 
 		// Verify:
 		// Assert that the decrypted price is the one with encrypted in a first place
@@ -396,19 +297,16 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 	// Create a pricer with:
 	// - UTF-8 keys
 	// - Price scale factor as micro
-	// - No debug mode
 
 	// Setup:
 	var pricer *DoubleClickPricer
 	var err error
-	pricer, err = buildNewDoubleClickPricer(
+	pricer, err = NewDoubleClickPricer(
 		"6356770B3C111C07F778AFD69F16643E9110090FD4C479D91181EED2523788F1",
 		"3588BF6D387E8AEAD4EEC66798255369AF47BFD48B056E8934CEFEF3609C469E",
-		false, // Keys are not base64
-		helpers.Utf8,
-		1000000,
 		false,
-	)
+		helpers.Utf8,
+		1000000)
 
 	assert.Nil(t, err, "Error creating new Pricer : ", err)
 
@@ -429,12 +327,11 @@ func TestEncryptDecryptWithUtf8Keys(t *testing.T) {
 		var err error
 
 		// Encrypt
-		encrypted, err = pricer.Encrypt("", price.clear)
-		assert.Nil(t, err, "Encryption failed. Error : %s", err)
+		encrypted = pricer.Encrypt("", price.clear)
 
 		// Decrypt
 		decrypted, err = pricer.Decrypt(encrypted)
-		assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
+		assert.Nil(t, err, "Decryption failed. Error : %s", err)
 
 		// Verify:
 		// Assert that the decrypted price is the one with encrypted in a first place
@@ -457,22 +354,7 @@ func TestEncryptDecryptWithSeed(t *testing.T) {
 		newPriceTestCase("", 1000, 1000000),
 	}
 
-	// Create a pricer with:
-	// - HEX keys
-	// - Price scale factor as micro
-	// - No debug mode
-	var pricer *DoubleClickPricer
-	var err error
-	pricer, err = buildNewDoubleClickPricer(
-		"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-		"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-		false, // Keys are not base64
-		helpers.Hexa,
-		1000000,
-		false,
-	)
-
-	assert.Nil(t, err, "Error creating new Pricer : ", err)
+	pricer := buildPricer()
 
 	var encryptedPrices []string
 
@@ -485,12 +367,11 @@ func TestEncryptDecryptWithSeed(t *testing.T) {
 			var err error
 
 			// Encrypt
-			encrypted, err = pricer.Encrypt(seed, price.clear)
-			assert.Nil(t, err, "Encryption failed. Error : %s", err)
+			encrypted = pricer.Encrypt(seed, price.clear)
 
 			// Decrypt
 			decrypted, err = pricer.Decrypt(encrypted)
-			assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
+			assert.Nil(t, err, "Decryption failed. Error : %s", err)
 
 			// Verify:
 			// Assert that the decrypted price is the one with encrypted in a first place
@@ -526,22 +407,7 @@ func TestEncryptDecryptWithScaleFactor(t *testing.T) {
 
 	for _, scaleFactor := range scaleFactorsToTest {
 
-		// Create a pricer with:
-		// - HEX keys
-		// - Price scale factor as micro
-		// - No debug mode
-		var pricer *DoubleClickPricer
-		var err error
-		pricer, err = buildNewDoubleClickPricer(
-			"652f83ada0545157a1b7fb0c0e09f59e7337332fe7abd4eb10449b8ee6c39135",
-			"bd0a3dfb82ad95c5e63e159a62f73c6aca98ba2495322194759d512d77eb2bb5",
-			false, // Keys are not base64
-			helpers.Hexa,
-			scaleFactor,
-			false,
-		)
-
-		assert.Nil(t, err, "Error creating new Pricer : ", err)
+		pricer := buildPricerWithScale(scaleFactor)
 
 		for _, price := range pricesTestCase {
 			// Execute:
@@ -550,16 +416,68 @@ func TestEncryptDecryptWithScaleFactor(t *testing.T) {
 			var err error
 
 			// Encrypt
-			encrypted, err = pricer.Encrypt("", price.clear)
-			assert.Nil(t, err, "Encryption failed. Error : %s", err)
+			encrypted = pricer.Encrypt("", price.clear)
 
 			// Decrypt
 			decrypted, err = pricer.Decrypt(encrypted)
-			assert.Nil(t, err, "EncryDecryptionption failed. Error : %s", err)
+			assert.Nil(t, err, "Decryption failed. Error : %s", err)
 
 			// Verify:
 			// Assert that the decrypted price is the one with encrypted in a first place
 			assert.InDelta(t, decrypted, price.clear, 0.001, "Decryption failed. Should be : %f but was : %f", price.clear, decrypted)
 		}
+	}
+}
+
+func TestDecryptAlloc(t *testing.T) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	// We can use testing.AllocsPerRun() but it gives only mallocs
+	// warmup
+	_, _ = pricer.Decrypt(encryptedPrice)
+	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
+	var memstats runtime.MemStats
+	runtime.ReadMemStats(&memstats)
+	mallocs := 0 - memstats.Mallocs
+	allocBytes := 0 - memstats.Alloc
+
+	// Run the function the specified number of times
+	_, _ = pricer.Decrypt(encryptedPrice)
+
+	// Read the final statistics
+	runtime.ReadMemStats(&memstats)
+	mallocs += memstats.Mallocs
+	allocBytes += memstats.Alloc
+
+	assert.Equal(t, uint64(2), mallocs)
+	assert.Equal(t, uint64(64), allocBytes)
+}
+
+func TestDecryptRawAlloc(t *testing.T) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	encryptedPriceBytes := []byte(encryptedPrice) // don't inline
+	mallocs := testing.AllocsPerRun(1, func() {
+		_, _ = pricer.DecryptRaw(encryptedPriceBytes)
+	})
+	assert.Equal(t, float64(1), mallocs)
+}
+
+// BenchmarkDecrypt-8       1831339               598.6 ns/op
+func BenchmarkDecrypt(b *testing.B) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	for i := 0; i < b.N; i++ {
+		_, _ = pricer.Decrypt(encryptedPrice)
+	}
+}
+
+// BenchmarkDecryptRaw-8            2003535               556.7 ns/op
+func BenchmarkDecryptRaw(b *testing.B) {
+	pricer := buildPricer()
+	encryptedPrice := "anCGGFJApcfB6ZGc6mindhpTrYXHY4ONo7lXpg"
+	encryptedPriceBytes := []byte(encryptedPrice) // don't inline
+	for i := 0; i < b.N; i++ {
+		_, _ = pricer.DecryptRaw(encryptedPriceBytes)
 	}
 }

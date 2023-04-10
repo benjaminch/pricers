@@ -5,13 +5,9 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
-	"fmt"
-	"hash"
-	"strings"
-
 	"github.com/benjaminch/pricers/helpers"
+	"hash"
 )
 
 var ErrWrongSize = errors.New("Encrypted price is not 38 chars")
@@ -19,18 +15,17 @@ var ErrWrongSignature = errors.New("Failed to decrypt")
 
 // DoubleClickPricer implementing price encryption and decryption
 // Specs : https://developers.google.com/ad-exchange/rtb/response-guide/decrypt-price
+// It's not thread safe so use PricersPool
 type DoubleClickPricer struct {
-	encryptionKeyRaw string
-	integrityKeyRaw  string
-	encryptionKey    hash.Hash
-	integrityKey     hash.Hash
-	keyDecodingMode  helpers.KeyDecodingMode
-	scaleFactor      float64
-	isDebugMode      bool
+	encryptionKey hash.Hash
+	integrityKey  hash.Hash
+	decoded       []byte // 28 bytes
+	hmacBuf       []byte // 28 bytes
+	scaleFactor   float64
 }
 
 // NewDoubleClickPricer returns a DoubleClickPricer struct.
-// Keys are either base 64 websafe of hexa. keyDecodingMode
+// Keys are either Base64Url (websafe) of hexa. keyDecodingMode
 // should be used to specify how keys should be decoded.
 // Factor the clear price will be multiplied by before encryption.
 // from specs, scaleFactor is 1,000,000, but you can set something else.
@@ -42,147 +37,113 @@ func NewDoubleClickPricer(
 	integrityKey string,
 	isBase64Keys bool,
 	keyDecodingMode helpers.KeyDecodingMode,
-	scaleFactor float64,
-	isDebugMode bool) (*DoubleClickPricer, error) {
+	scaleFactor float64) (*DoubleClickPricer, error) {
 	var err error
-	var encryptingFun, integrityFun hash.Hash
 
-	encryptingFun, err = helpers.CreateHmac(encryptionKey, isBase64Keys, keyDecodingMode)
+	encryptionKeyRaw, err := helpers.RawKeyBytes(encryptionKey, isBase64Keys, keyDecodingMode)
 	if err != nil {
 		return nil, err
 	}
-	integrityFun, err = helpers.CreateHmac(integrityKey, isBase64Keys, keyDecodingMode)
+	integrityKeyRaw, err := helpers.RawKeyBytes(integrityKey, isBase64Keys, keyDecodingMode)
 	if err != nil {
 		return nil, err
 	}
 
-	if isDebugMode {
-		fmt.Println("Keys decoding mode : ", keyDecodingMode)
-		fmt.Println("Encryption key : ", encryptionKey)
-		encryptionKeyHexa, err := hex.DecodeString(encryptionKey)
-		if err != nil {
-			encryptionKeyHexa = []byte(encryptionKey)
-		}
-		fmt.Println("Encryption key (bytes) : ", []byte(encryptionKeyHexa))
-		fmt.Println("Integrity key : ", integrityKey)
-		integrityKeyHexa, err := hex.DecodeString(integrityKey)
-		if err != nil {
-			integrityKeyHexa = []byte(integrityKey)
-		}
-		fmt.Println("Integrity key (bytes) : ", []byte(integrityKeyHexa))
-	}
+	encryptingFun := helpers.CreateHmac(encryptionKeyRaw)
+	integrityFun := helpers.CreateHmac(integrityKeyRaw)
+	decoded := [28]byte{}
+	hmacBuf := [28]byte{}
 
 	return &DoubleClickPricer{
-			encryptionKeyRaw: encryptionKey,
-			integrityKeyRaw:  integrityKey,
-			encryptionKey:    encryptingFun,
-			integrityKey:     integrityFun,
-			keyDecodingMode:  keyDecodingMode,
-			scaleFactor:      scaleFactor,
-			isDebugMode:      isDebugMode},
-		nil
+		encryptionKey: encryptingFun,
+		integrityKey:  integrityFun,
+		scaleFactor:   scaleFactor,
+		decoded:       decoded[:],
+		hmacBuf:       hmacBuf[:],
+	}, nil
+}
+
+func NewDoubleClickPricerFromRawKeys(
+	encryptionKeyRaw []byte,
+	integrityKeyRaw []byte,
+	scaleFactor float64) *DoubleClickPricer {
+	encryptingFun := helpers.CreateHmac(encryptionKeyRaw)
+	integrityFun := helpers.CreateHmac(integrityKeyRaw)
+	decoded := [28]byte{}
+	hmacBuf := [28]byte{}
+	return &DoubleClickPricer{
+		encryptionKey: encryptingFun,
+		integrityKey:  integrityFun,
+		scaleFactor:   scaleFactor,
+		decoded:       decoded[:],
+		hmacBuf:       hmacBuf[:]}
 }
 
 // Encrypt encrypts a clear price and a given seed.
-func (dc *DoubleClickPricer) Encrypt(seed string, price float64) (string, error) {
-	var (
-		iv        [16]byte
-		encoded   [8]byte
-		signature []byte
-	)
-
-	data := helpers.ApplyScaleFactor(price, dc.scaleFactor, dc.isDebugMode)
+func (dc *DoubleClickPricer) Encrypt(seed string, price float64) string {
+	data := helpers.ApplyScaleFactor(price, dc.scaleFactor)
 
 	// Create Initialization Vector from seed
-	iv = md5.Sum([]byte(seed))
-	if dc.isDebugMode {
-		fmt.Println("Seed : ", seed)
-		fmt.Println("Initialization vector : ", iv)
-	}
+	iv := md5.Sum([]byte(seed))
 
 	//pad = hmac(e_key, iv), first 8 bytes
-	pad := helpers.HmacSum(dc.encryptionKey, iv[:], nil)[:8]
-	if dc.isDebugMode {
-		fmt.Println("// pad = hmac(e_key, iv), first 8 bytes")
-		fmt.Println("Pad : ", pad)
-	}
+	pad := helpers.HmacSum(dc.encryptionKey, iv[:], nil, nil)[:8]
 
 	// signature = hmac(i_key, data || iv), first 4 bytes
-	signature = helpers.HmacSum(dc.integrityKey, data[:], iv[:])[:4]
-	if dc.isDebugMode {
-		fmt.Println("// signature = hmac(i_key, data || iv), first 4 bytes")
-		fmt.Println("Signature : ", signature)
-	}
+	signature := helpers.HmacSum(dc.integrityKey, data[:], iv[:], nil)[:4]
 
 	// enc_data = pad <xor> data
+	encoded := [8]byte{}
 	for i := range data {
 		encoded[i] = pad[i] ^ data[i]
 	}
-	if dc.isDebugMode {
-		fmt.Println("// enc_data = pad <xor> data")
-		fmt.Println("Encoded price bytes : ", encoded)
-	}
 
 	// final_message = WebSafeBase64Encode( iv || enc_price || signature )
-	return base64.RawURLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature...)), nil
+	return base64.RawURLEncoding.EncodeToString(append(append(iv[:], encoded[:]...), signature...))
 }
 
 // Decrypt decrypts an encrypted price.
 func (dc *DoubleClickPricer) Decrypt(encryptedPrice string) (float64, error) {
-	var err error
-	var errPrice float64
+	priceInMicros, err := dc.DecryptRaw([]byte(encryptedPrice))
+	price := float64(priceInMicros) / dc.scaleFactor
+	return price, err
+}
 
+// DecryptRaw decrypts an encrypted price.
+// It returns the price as integer in micros without applying a scaleFactor
+func (dc *DoubleClickPricer) DecryptRaw(encryptedPrice []byte) (uint64, error) {
 	// Decode base64 url
 	// Just to be safe remove padding if it was added by mistake
-	encryptedPrice = strings.TrimRight(encryptedPrice, "=")
+	encryptedPrice = bytes.TrimRight(encryptedPrice, "=")
 	if len(encryptedPrice) != 38 {
-		return errPrice, ErrWrongSize
+		return 0, ErrWrongSize
 	}
-	decoded, err := base64.RawURLEncoding.DecodeString(encryptedPrice)
+	_, err := base64.RawURLEncoding.Decode(dc.decoded, encryptedPrice)
 	if err != nil {
-		return errPrice, err
-	}
-
-	if dc.isDebugMode {
-		fmt.Println("Encrypted price : ", encryptedPrice)
-		fmt.Println("Base64 decoded price : ", decoded)
+		return 0, err
 	}
 
 	// Get elements
-	var (
-		iv         []byte
-		p          []byte
-		signature  []byte
-		priceMicro [8]byte
-	)
-
-	iv = decoded[0:16]
-	p = decoded[16:24]
-	signature = decoded[24:28]
+	iv := dc.decoded[0:16]
+	p := binary.BigEndian.Uint64(dc.decoded[16:24])
+	signature := binary.BigEndian.Uint32(dc.decoded[24:28])
 
 	// pad = hmac(e_key, iv)
-	pad := helpers.HmacSum(dc.encryptionKey, iv, nil)[:8]
-
-	if dc.isDebugMode {
-		fmt.Println("IV : ", hex.EncodeToString(iv))
-		fmt.Println("Encoded price : ", hex.EncodeToString(p))
-		fmt.Println("Signature : ", hex.EncodeToString(signature))
-		fmt.Println("Pad : ", hex.EncodeToString(pad))
-	}
+	padBytes := helpers.HmacSum(dc.encryptionKey, iv, nil, dc.hmacBuf)[:8]
+	pad := binary.BigEndian.Uint64(padBytes)
 
 	// priceMicro = p <xor> pad
-	for i := range p {
-		priceMicro[i] = pad[i] ^ p[i]
-	}
+	priceInMicros := pad ^ p
+	priceMicro := [8]byte{}
+	binary.BigEndian.PutUint64(priceMicro[:], priceInMicros)
 
 	// conf_sig = hmac(i_key, data || iv)
-	confirmationSignature := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv)[:4]
+	confirmationSignatureBytes := helpers.HmacSum(dc.integrityKey, priceMicro[:], iv, dc.hmacBuf)[:4]
+	confirmationSignature := binary.BigEndian.Uint32(confirmationSignatureBytes)
 
 	// success = (conf_sig == sig)
-	if !bytes.Equal(confirmationSignature, signature) {
-		return errPrice, ErrWrongSignature
+	if confirmationSignature != signature {
+		return 0, ErrWrongSignature
 	}
-	price := float64(binary.BigEndian.Uint64(priceMicro[:])) / dc.scaleFactor
-
-	return price, nil
+	return priceInMicros, nil
 }
